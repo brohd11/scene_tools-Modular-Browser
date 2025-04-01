@@ -17,3 +17,7 @@ The target node the scenes should be added to can be set by pressing the Node3D 
 when the desired node is selected. This will persist between switching scenes.
 
 Can be setup in any way, but the examples I have are bottom panel and a floating window.
+
+![bottom_panel](https://github.com/user-attachments/assets/e0a4dc4a-4bc1-4f3d-888b-80841896beb4)
+
+![floating](https://github.com/user-attachments/assets/5182deb9-97a6-4bf6-b994-34c7fb5a13a0)
