@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://kw0yfcs32f2v"
-path="res://.godot/imported/GuiOptionArrow.svg-4aa765ad561b23f028620e3afcf87f12.ctex"
+uid="uid://bylockm7ekafs"
+path="res://.godot/imported/StatusWarning.svg-95e61bc55a12b368665331761bc5ac4c.ctex"
 metadata={
 "has_editor_variant": true,
 "vram_texture": false
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://addons/scene_tools/icons/GuiOptionArrow.svg"
-dest_files=["res://.godot/imported/GuiOptionArrow.svg-4aa765ad561b23f028620e3afcf87f12.ctex"]
+source_file="res://addons/scene_tools_b/icons/StatusWarning.svg"
+dest_files=["res://.godot/imported/StatusWarning.svg-95e61bc55a12b368665331761bc5ac4c.ctex"]
 
 [params]
 

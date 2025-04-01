@@ -6,7 +6,7 @@ const Utils := preload("res://addons/scene_tools/utils.gd")
 var plugin: SceneTools
 
 func _init(_plugin: SceneTools = null) -> void:
-    plugin = _plugin
+	plugin = _plugin
 
 func enter() -> void: pass
 func exit() -> void: pass
