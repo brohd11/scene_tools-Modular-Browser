@@ -3,7 +3,7 @@ static func raycast(camera: Camera3D) -> Dictionary:
 	var mousepos := EditorInterface.get_editor_viewport_3d().get_mouse_position()
 
 	var origin := camera.project_ray_origin(mousepos)
-	var end := origin + camera.project_ray_normal(mousepos) * 1000.0
+	var end := origin + camera.project_ray_normal(mousepos) * 5000.0
 	var query := PhysicsRayQueryParameters3D.create(origin, end)
 
 	return space_state.intersect_ray(query)

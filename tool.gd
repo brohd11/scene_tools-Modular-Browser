@@ -22,3 +22,5 @@ func _on_scene_changed(_scene_root: Node) -> void: pass
 func _on_scene_closed(_path: String) -> void: pass
 
 func _on_plugin_enabled(_enabled: bool) -> void: pass
+
+func set_root_node(node:Node) -> void: pass

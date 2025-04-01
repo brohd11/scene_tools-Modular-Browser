@@ -9,33 +9,41 @@ const PlaceTool := preload("res://addons/scene_tools/tools/place.gd")
 var gui := preload("res://addons/scene_tools/gui.tscn")
 
 
+## ModBrowser Start
+const CONFIG_PATH = "res://addons/scene_tools/config/scene_tools.cfg"
 
 const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
 func _connect_global_bus():
-	var bus_array = ab_lib.ABGlobalSignals.get_global_bus_array(["scene_tools"])
-	ab_lib.ABGlobalSignals.connect_send_files_to_bus(bus_array, _on_global)
-	pass
-func _on_global(items, root):
+	var bus_array = ab_lib.ABGlobalSignals.get_global_bus_array(["scene_tools_send"])
+	ab_lib.ABGlobalSignals.connect_send_files_to_bus(bus_array, _on_data_items_sent)
+
+func _on_data_items_sent(items, root):
+	print("SceneTools enabled:", plugin_enabled)
 	if not plugin_enabled:
-		plugin_enabled = true
+		set_plugin_enabled(true)
+		
 	var scenes = ab_lib.ABTree.Static.get_item_array_paths(items,[],["PackedScene"])
 	if scenes.is_empty():
 		#update_selected_assets([])
 		return
 	var path = scenes[0]
 	var uid = ab_lib.Stat.ed_util.path_to_uid(path)
-	print("uid ", uid)
-	update_selected_assets([uid])
 	
-	if not EditorInterface.get_base_control().get_window().has_focus():
-		EditorInterface.get_base_control().get_window().grab_focus()
-	pass
+	update_selected_assets(scenes)
+	editor_grab_focus()
 
 static var plugin_instance
 
+
+## /
+
 var gui_instance: GuiHandler
 
-var root_node: Node
+var root_node: Node:
+	set(val):
+		root_node = val
+		_get_state()
+
 var scene_root: Node
 
 var undo_redo: EditorUndoRedoManager
@@ -70,46 +78,11 @@ func _exit_tree() -> void:
 	for tool in tools:
 		tool.exit()
 
-#func add_gui():
-	#var gui_root := gui.instantiate()
-	#gui_instance = gui_root.get_node("SceneTools") as GuiHandler
-	#gui_instance.plugin_instance = self
-	#
-	#gui_instance.version_label.text = plugin_name + " v" + get_plugin_version()
-	#
-	#gui_instance.owner = null
-	#gui_root.remove_child(gui_instance)
-	#add_control_to_container(CustomControlContainer.CONTAINER_SPATIAL_EDITOR_MENU, gui_instance)
-	#
-	#gui_instance.side_panel.owner = null
-	#gui_root.remove_child(gui_instance.side_panel)
-	#add_control_to_container(CustomControlContainer.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, gui_instance.side_panel)
-	#
-	#gui_instance.scene_tools_button.pressed.connect(_scene_tools_button_pressed)
-	#
-	#gui_root.free()
-	#pass
-#
-#func remove_gui():
-	#remove_control_from_container(CustomControlContainer.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, gui_instance.side_panel)
-	#remove_control_from_container(CustomControlContainer.CONTAINER_SPATIAL_EDITOR_MENU, gui_instance)
-	#gui_instance.side_panel.free()
-	#gui_instance.free()
 
-#func _make_visible(visible: bool) -> void:
-	#if visible:
-		#gui_instance.show()
-		#gui_instance.side_panel.set_visible(plugin_enabled)
-	#else:
-		#gui_instance.hide()
-		#gui_instance.side_panel.hide()
-
-func _scene_tools_button_pressed() -> void:
-	print("YE YE")
-	set_plugin_enabled(!plugin_enabled)
-	if plugin_enabled:
-		if not EditorInterface.get_base_control().get_window().has_focus():
-			EditorInterface.get_base_control().get_window().grab_focus()
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and plugin_enabled:
+		if event.keycode == KEY_ESCAPE:
+			set_plugin_enabled(false)
 
 func _get_plugin_name() -> String:
 	return plugin_name
@@ -122,13 +95,11 @@ func _on_editor_selection_changed():
 		return
 	var selection = EditorInterface.get_selection().get_selected_nodes()
 	if selection.is_empty():
-		plugin_enabled = false
-	
+		set_plugin_enabled(false)
 
 
 func _on_scene_changed(_scene_root: Node) -> void:
 	current_tool._on_scene_changed(_scene_root)
-
 func _on_scene_closed(path: String) -> void:
 	current_tool._on_scene_closed(path)
 
@@ -139,34 +110,52 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	if not plugin_enabled or not root_node:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
 	
-	#update_selected_assets()
-	
 	return current_tool.forward_3d_gui_input(viewport_camera, event)
 
-func _get_window_layout(configuration: ConfigFile) -> void:
+func get_config_file():
+	var config = ConfigFile.new()
+	if not FileAccess.file_exists(CONFIG_PATH):
+		var c = ConfigFile.new()
+		c.save(CONFIG_PATH)
+		await get_tree().process_frame
+	
+	var err = config.load(CONFIG_PATH)
+	if err != OK:
+		print("Error loading SceneTools config: ", err)
+	return config
+
+func save_config():
+	var configuration = await get_config_file()
 	for tool in tools:
 		tool.save_state(configuration)
+	
+	configuration.save(CONFIG_PATH)
 
-func _set_window_layout(configuration: ConfigFile) -> void:
+func load_config():
+	var configuration = await get_config_file()
 	for tool in tools:
 		tool.load_state(configuration)
 
 func set_plugin_enabled(enabled: bool) -> void:
 	plugin_enabled = enabled
 	current_tool._on_plugin_enabled(enabled)
+	if enabled:
+		var selected = EditorInterface.get_selection().get_selected_nodes()
+		if not selected.is_empty():
+			return
+		var ed_scene_root = EditorInterface.get_edited_scene_root()
+		if ed_scene_root is Node3D:
+			EditorInterface.edit_node(ed_scene_root)
+		else:
+			print("Can't use in non-3D scenes.")
+			set_plugin_enabled(false)
 
-func update_selected_assets(new_selected_array=[]) -> void:
-	var new_selected:Array
-	if new_selected_array.is_empty():
-		new_selected = Array(EditorInterface.get_selected_paths())
-	else:
-		new_selected = new_selected_array
-
+func update_selected_assets(new_selected:Array) -> void:
 	# Remove directories
 	new_selected = new_selected.filter(func(path: String) -> bool:
 		return not path.ends_with("/")
 	)
-	print(plugin_enabled)
+	
 	var remove_brush := false
 	
 	# if the amount of selected files changed
@@ -174,7 +163,7 @@ func update_selected_assets(new_selected_array=[]) -> void:
 		# if new_selected is not empty then try instantiating the first asset
 		if not new_selected.is_empty():
 			var scene := ResourceLoader.load(new_selected[0]) as PackedScene
-
+			
 			if scene:
 				place_tool.change_brush(scene)
 				if place_tool.snapping_enabled:
@@ -200,5 +189,33 @@ func update_selected_assets(new_selected_array=[]) -> void:
 		place_tool.grid_mesh.hide()
 		if place_tool.brush != null:
 			place_tool.brush.free()
-
+	
 	selected_assets = new_selected
+
+
+func _set_state(state: Dictionary) -> void:
+	var path = state.get("SceneToolsRootPath")
+	var node_path = NodePath(path)
+	var last_root = EditorInterface.get_edited_scene_root().get_node(node_path)
+	if not last_root:
+		last_root = EditorInterface.get_edited_scene_root()
+	set_root_node(last_root)
+
+func _get_state():
+	var path:NodePath = EditorInterface.get_edited_scene_root().get_path_to(root_node)
+	var state = {
+		"SceneToolsRootPath": path,
+		}
+	return state
+
+func set_root_node(node):
+	root_node = node
+	for tool in tools:
+		tool.set_root_node(root_node)
+	print(gui_instance)
+	if is_instance_valid(gui_instance):
+		gui_instance.set_root_node_name(root_node)
+
+func editor_grab_focus():
+	if not EditorInterface.get_base_control().get_window().has_focus():
+		EditorInterface.get_base_control().get_window().grab_focus()

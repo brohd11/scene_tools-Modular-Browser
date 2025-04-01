@@ -2,6 +2,8 @@ extends "res://addons/scene_tools/tool.gd"
 
 const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
 
+const TOOL_NAME = "Place"
+
 var snapping_enabled := false
 
 var brush: Node3D
@@ -35,6 +37,7 @@ var rotation_step := PI / 4.0
 var force_readable_name := false
 
 var fill_mesh: MeshInstance3D
+var fill_bounding_box: AABB
 
 func enter() -> void:
 	setup_grid_mesh()
@@ -49,6 +52,7 @@ func exit() -> void:
 		fill_mesh.free()
 
 func edit(object: Object) -> void:
+	return
 	set_root_node(object)
 
 func handles(object: Object) -> bool:
@@ -67,20 +71,23 @@ func set_root_node(node: Node) -> void:
 			brush.show()
 	plugin.root_node = node
 
+
 func set_grid_visible(visible: bool) -> void:
 	if plugin.plugin_enabled:
 		if plugin.root_node and is_instance_valid(brush):
 			if current_mode == Mode.PLANE or current_mode == Mode.FILL:
 				grid_mesh.set_visible(visible)
 
-var fill_bounding_box: AABB
+
+
+#region RayCast/Input
 
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 	if not brush:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
-
+	
 	brush.rotation = rotation
-
+	
 	match current_mode:
 		Mode.FREE:
 			var result := Utils.raycast(viewport_camera)
@@ -89,21 +96,21 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 					result.position = result.position.snapped(Vector3(snapping_step, snapping_step, snapping_step))
 				if align_to_surface:
 					brush.transform = align_with_normal(brush.transform, result.normal)
-
+				
 				brush.position = result.position
-
+		
 		Mode.PLANE, Mode.FILL:
 			var result: Variant = Utils.raycast_plane(viewport_camera, plane)
 			if result != null:
 				result = result as Vector3
-
+				
 				grid_mesh.mesh.surface_get_material(0).set_shader_parameter("mouse_world_position", result)
-
+				
 				if snapping_enabled:
 					result = result.snapped(Vector3(snapping_step, snapping_step, snapping_step))
 					result += Vector3(snapping_offset, snapping_offset, snapping_offset)
 					grid_mesh.position = result
-
+				
 				# TODO: maybe use transform instead of just position to avoid this
 				match plane_normal:
 					0:
@@ -115,9 +122,9 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 					2:
 						result.x = plane.d
 						grid_mesh.position.x = plane.d + 0.01
-
+				
 				brush.position = result
-
+				
 				if current_mode == Mode.FILL:
 					fill_bounding_box.size = brush.position - fill_bounding_box.position
 					fill_mesh.position = fill_bounding_box.get_center()
@@ -185,14 +192,14 @@ func visual_raycast(camera: Camera3D) -> Node:
 	var mousepos := EditorInterface.get_editor_viewport_3d().get_mouse_position()
 
 	var origin := camera.project_ray_origin(mousepos)
-	var end := origin + camera.project_ray_normal(mousepos) * 1000.0
+	var end := origin + camera.project_ray_normal(mousepos) * 5000.0
 
 	var result := RenderingServer.instances_cull_ray(origin, end, camera.get_world_3d().scenario)
 
 	if not result.is_empty():
 		# instances_cull_ray returns nodes in random order, so we have to find closest to the camera
 		var closest_node: Node3D
-		var closest_distance := 1000.0
+		var closest_distance := 5000.0
 		for id: int in result:
 			var instance := instance_from_id(id)
 			if instance.owner and instance.owner != brush:
@@ -214,6 +221,9 @@ func visual_raycast(camera: Camera3D) -> Node:
 							closest_distance = distance
 		return closest_node
 	return null
+
+#endregion
+
 
 # # TODO: rework
 # # taken from https://github.com/godotengine/godot/issues/85903#issuecomment-1846245217
@@ -347,81 +357,85 @@ func set_plane_normal(normal: int) -> void:
 			plane.normal = Vector3.RIGHT
 			grid_mesh.rotation = Vector3(0.0, 0.0, PI/2.0)
 
-func load_state(configuration: ConfigFile) -> void:
-	change_mode(configuration.get_value(plugin.plugin_name, "current_mode", current_mode))
+#region Config
 
-	snapping_enabled = configuration.get_value(plugin.plugin_name, "snapping_enabled", false)
+func load_state(configuration: ConfigFile) -> void:
+	change_mode(configuration.get_value(TOOL_NAME, "current_mode", current_mode))
+
+	snapping_enabled = configuration.get_value(TOOL_NAME, "snapping_enabled", false)
 	plugin.gui_instance.snapping_button.set_pressed_no_signal(snapping_enabled)
 
-	plane.d = configuration.get_value(plugin.plugin_name, "plane_level", 0.0)
+	plane.d = configuration.get_value(TOOL_NAME, "plane_level", 0.0)
 	plugin.gui_instance.plane_level.text = str(plane.d)
 
-	set_snapping_step(configuration.get_value(plugin.plugin_name, "snapping_step", 1.0))
+	set_snapping_step(configuration.get_value(TOOL_NAME, "snapping_step", 1.0))
 	plugin.gui_instance.snapping_step.text = str(snapping_step)
 
-	snapping_offset = configuration.get_value(plugin.plugin_name, "snapping_offset", 0.0)
+	snapping_offset = configuration.get_value(TOOL_NAME, "snapping_offset", 0.0)
 	plugin.gui_instance.snapping_offset.text = str(snapping_offset)
 
-	align_to_surface = configuration.get_value(plugin.plugin_name, "align_to_surface", false)
+	align_to_surface = configuration.get_value(TOOL_NAME, "align_to_surface", false)
 	plugin.gui_instance.align_to_surface_button.set_pressed_no_signal(align_to_surface)
 
-	base_scale = configuration.get_value(plugin.plugin_name, "base_scale", base_scale)
+	base_scale = configuration.get_value(TOOL_NAME, "base_scale", base_scale)
 	plugin.gui_instance._set_scale(base_scale)
 
-	random_scale = configuration.get_value(plugin.plugin_name, "random_scale", 0.0)
+	random_scale = configuration.get_value(TOOL_NAME, "random_scale", 0.0)
 	plugin.gui_instance.random_scale.text = str(random_scale)
 
-	plane_normal = configuration.get_value(plugin.plugin_name, "plane_normal", 0)
+	plane_normal = configuration.get_value(TOOL_NAME, "plane_normal", 0)
 	plugin.gui_instance.plane_option.selected = plane_normal
 	set_plane_normal(plane_normal)
 
-	grid_display_enabled = configuration.get_value(plugin.plugin_name, "grid_display_enabled", true)
+	grid_display_enabled = configuration.get_value(TOOL_NAME, "grid_display_enabled", true)
 	plugin.gui_instance.display_grid_checkbox.set_pressed_no_signal(grid_display_enabled)
 
-	chance_to_spawn = configuration.get_value(plugin.plugin_name, "chance_to_spawn", chance_to_spawn)
+	chance_to_spawn = configuration.get_value(TOOL_NAME, "chance_to_spawn", chance_to_spawn)
 	plugin.gui_instance.chance_to_spawn.text = str(chance_to_spawn)
 
-	random_scale_enabled = configuration.get_value(plugin.plugin_name, "random_scale_enabled", random_scale_enabled)
+	random_scale_enabled = configuration.get_value(TOOL_NAME, "random_scale_enabled", random_scale_enabled)
 	plugin.gui_instance.random_scale_button.set_pressed_no_signal(random_scale_enabled)
 
-	random_rotation_enabled = configuration.get_value(plugin.plugin_name, "random_rotation_enabled", random_rotation_enabled)
+	random_rotation_enabled = configuration.get_value(TOOL_NAME, "random_rotation_enabled", random_rotation_enabled)
 	plugin.gui_instance.random_rotation_button.set_pressed_no_signal(random_rotation_enabled)
 
-	random_rotation_axis = configuration.get_value(plugin.plugin_name, "random_rotation_axis", random_rotation_axis)
+	random_rotation_axis = configuration.get_value(TOOL_NAME, "random_rotation_axis", random_rotation_axis)
 	plugin.gui_instance.random_rotation_axis.selected = random_rotation_axis
 
-	scale_linked = configuration.get_value(plugin.plugin_name, "scale_linked", scale_linked)
+	scale_linked = configuration.get_value(TOOL_NAME, "scale_linked", scale_linked)
 	plugin.gui_instance.scale_link_button.set_pressed_no_signal(scale_linked)
 
-	random_rotation = configuration.get_value(plugin.plugin_name, "random_rotation", random_rotation)
+	random_rotation = configuration.get_value(TOOL_NAME, "random_rotation", random_rotation)
 	plugin.gui_instance.random_rotation.text = str(roundf(rad_to_deg(random_rotation)))
 
-	rotation_step = configuration.get_value(plugin.plugin_name, "rotation_step", rotation_step)
+	rotation_step = configuration.get_value(TOOL_NAME, "rotation_step", rotation_step)
 	plugin.gui_instance.rotation_step.text = str(roundf(rad_to_deg(rotation_step)))
 
-	force_readable_name = configuration.get_value(plugin.plugin_name, "force_readable_name", force_readable_name)
-	plugin.gui_instance.force_readable_name_checkbox.set_pressed_no_signal(force_readable_name)
+	#force_readable_name = configuration.get_value(TOOL_NAME, "force_readable_name", force_readable_name)
+	#plugin.gui_instance.force_readable_name_checkbox.set_pressed_no_signal(force_readable_name)
 
 
 func save_state(configuration: ConfigFile) -> void:
-	configuration.set_value(plugin.plugin_name, "snapping_enabled", snapping_enabled)
-	configuration.set_value(plugin.plugin_name, "plane_level", plane.d)
-	configuration.set_value(plugin.plugin_name, "snapping_step", snapping_step)
-	configuration.set_value(plugin.plugin_name, "snapping_offset", snapping_offset)
-	configuration.set_value(plugin.plugin_name, "align_to_surface", align_to_surface)
-	configuration.set_value(plugin.plugin_name, "base_scale", base_scale)
-	configuration.set_value(plugin.plugin_name, "random_scale", random_scale)
-	configuration.set_value(plugin.plugin_name, "plane_normal", plane_normal)
-	configuration.set_value(plugin.plugin_name, "grid_display_enabled", grid_display_enabled)
-	configuration.set_value(plugin.plugin_name, "chance_to_spawn", chance_to_spawn)
-	configuration.set_value(plugin.plugin_name, "current_mode", current_mode)
-	configuration.set_value(plugin.plugin_name, "random_scale_enabled", random_scale_enabled)
-	configuration.set_value(plugin.plugin_name, "random_rotation_enabled", random_rotation_enabled)
-	configuration.set_value(plugin.plugin_name, "random_rotation_axis", random_rotation_axis)
-	configuration.set_value(plugin.plugin_name, "scale_linked", scale_linked)
-	configuration.set_value(plugin.plugin_name, "random_rotation", random_rotation)
-	configuration.set_value(plugin.plugin_name, "rotation_step", rotation_step)
-	configuration.set_value(plugin.plugin_name, "force_readable_name", force_readable_name)
+	configuration.set_value(TOOL_NAME, "snapping_enabled", snapping_enabled)
+	configuration.set_value(TOOL_NAME, "plane_level", plane.d)
+	configuration.set_value(TOOL_NAME, "snapping_step", snapping_step)
+	configuration.set_value(TOOL_NAME, "snapping_offset", snapping_offset)
+	configuration.set_value(TOOL_NAME, "align_to_surface", align_to_surface)
+	configuration.set_value(TOOL_NAME, "base_scale", base_scale)
+	configuration.set_value(TOOL_NAME, "random_scale", random_scale)
+	configuration.set_value(TOOL_NAME, "plane_normal", plane_normal)
+	configuration.set_value(TOOL_NAME, "grid_display_enabled", grid_display_enabled)
+	configuration.set_value(TOOL_NAME, "chance_to_spawn", chance_to_spawn)
+	configuration.set_value(TOOL_NAME, "current_mode", current_mode)
+	configuration.set_value(TOOL_NAME, "random_scale_enabled", random_scale_enabled)
+	configuration.set_value(TOOL_NAME, "random_rotation_enabled", random_rotation_enabled)
+	configuration.set_value(TOOL_NAME, "random_rotation_axis", random_rotation_axis)
+	configuration.set_value(TOOL_NAME, "scale_linked", scale_linked)
+	configuration.set_value(TOOL_NAME, "random_rotation", random_rotation)
+	configuration.set_value(TOOL_NAME, "rotation_step", rotation_step)
+	configuration.set_value(TOOL_NAME, "force_readable_name", force_readable_name)
+
+#endregion
 
 func set_snapping_enabled(enabled: bool) -> void:
 	snapping_enabled = enabled
@@ -495,10 +509,10 @@ func change_mode(new_mode: Mode) -> void:
 			plugin.gui_instance.plane_container.hide()
 			plugin.gui_instance.chance_to_spawn_container.hide()
 			set_grid_visible(false)
-
+	
 	current_mode = new_mode
 	plugin.gui_instance.mode_option.selected = current_mode
-
+	
 	# Mode entering logic
 	match current_mode:
 		Mode.FREE:
@@ -519,14 +533,17 @@ func _on_scene_changed(scene_root: Node) -> void:
 			plugin.scene_root.remove_child(brush)
 		if is_instance_valid(grid_mesh):
 			plugin.scene_root.remove_child(grid_mesh)
-
+	
 	plugin.scene_root = scene_root
-
+	
 	if is_instance_valid(plugin.scene_root):
 		if is_instance_valid(brush):
 			plugin.scene_root.add_child(brush)
 		if is_instance_valid(grid_mesh):
 			plugin.scene_root.add_child(grid_mesh)
+	
+	if not plugin.plugin_enabled:
+		plugin.update_selected_assets([])
 
 func _on_scene_closed(path: String) -> void:
 	if plugin.scene_root and plugin.scene_root.scene_file_path == path:
