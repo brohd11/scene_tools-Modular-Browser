@@ -6,7 +6,6 @@ const plugin_name := "Scene Tools"
 const GuiHandler := preload("res://addons/scene_tools/gui_handler.gd")
 const Tool := preload("res://addons/scene_tools/tool.gd")
 const PlaceTool := preload("res://addons/scene_tools/tools/place.gd")
-var gui := preload("res://addons/scene_tools/gui.tscn")
 
 
 ## ModBrowser Start
@@ -17,8 +16,8 @@ func _connect_global_bus():
 	var bus_array = ab_lib.ABGlobalSignals.get_global_bus_array(["scene_tools_send"])
 	ab_lib.ABGlobalSignals.connect_send_files_to_bus(bus_array, _on_data_items_sent)
 
+
 func _on_data_items_sent(items, root):
-	print("SceneTools enabled:", plugin_enabled)
 	if not plugin_enabled:
 		set_plugin_enabled(true)
 		
@@ -33,8 +32,6 @@ func _on_data_items_sent(items, root):
 	editor_grab_focus()
 
 static var plugin_instance
-
-
 ## /
 
 var gui_instance: GuiHandler
@@ -45,14 +42,9 @@ var root_node: Node:
 		_get_state()
 
 var scene_root: Node
-
 var undo_redo: EditorUndoRedoManager
-
 var plugin_enabled := false
-
 var selected_assets: Array
-
-var side_panel_folded := true
 
 var place_tool := PlaceTool.new(self)
 var tools: Array[Tool] = [
@@ -60,8 +52,11 @@ var tools: Array[Tool] = [
 ]
 var current_tool: Tool = place_tool
 
+
 func _enter_tree() -> void:
+	
 	plugin_instance = self
+	
 	_connect_global_bus()
 	
 	scene_changed.connect(_on_scene_changed)
@@ -71,11 +66,10 @@ func _enter_tree() -> void:
 	
 	current_tool.enter()
 	
-	EditorInterface.get_selection().selection_changed.connect(_on_editor_selection_changed)
+	EditorInterface.get_selection().selection_changed.connect(_on_editor_selection_changed, 1)
 
 func _exit_tree() -> void:
-	
-	for tool in tools:
+	for tool in tools: # doesn't seem to cause issues, but may be unnecessary?
 		tool.exit()
 
 
@@ -196,13 +190,22 @@ func update_selected_assets(new_selected:Array) -> void:
 func _set_state(state: Dictionary) -> void:
 	var path = state.get("SceneToolsRootPath")
 	var node_path = NodePath(path)
-	var last_root = EditorInterface.get_edited_scene_root().get_node(node_path)
-	if not last_root:
-		last_root = EditorInterface.get_edited_scene_root()
+	var editor_scene_root = EditorInterface.get_edited_scene_root()
+	var last_root
+	if not editor_scene_root.has_node(node_path):
+		last_root = editor_scene_root
+	else:
+		last_root = editor_scene_root.get_node(node_path)
+	
 	set_root_node(last_root)
 
 func _get_state():
-	var path:NodePath = EditorInterface.get_edited_scene_root().get_path_to(root_node)
+	if not root_node:
+		return
+	var editor_scene_root = EditorInterface.get_edited_scene_root()
+	if root_node != editor_scene_root and root_node.owner != editor_scene_root:
+		return
+	var path:NodePath = editor_scene_root.get_path_to(root_node)
 	var state = {
 		"SceneToolsRootPath": path,
 		}
@@ -212,7 +215,6 @@ func set_root_node(node):
 	root_node = node
 	for tool in tools:
 		tool.set_root_node(root_node)
-	print(gui_instance)
 	if is_instance_valid(gui_instance):
 		gui_instance.set_root_node_name(root_node)
 

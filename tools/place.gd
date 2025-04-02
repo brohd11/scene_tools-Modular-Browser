@@ -342,10 +342,13 @@ func setup_fill_mesh() -> void:
 
 func set_snapping_step(value: float) -> void:
 	snapping_step = maxf(0.1, value)
-	grid_mesh.mesh.surface_get_material(0).set_shader_parameter("grid_step", snapping_step)
+	if is_instance_valid(grid_mesh):
+		grid_mesh.mesh.surface_get_material(0).set_shader_parameter("grid_step", snapping_step)
 
 func set_plane_normal(normal: int) -> void:
 	plane_normal = normal
+	if not is_instance_valid(grid_mesh):
+		return
 	match plane_normal:
 		0:
 			plane.normal = Vector3.UP

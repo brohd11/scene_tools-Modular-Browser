@@ -1,10 +1,21 @@
-[gd_scene load_steps=9 format=3 uid="uid://ilgtvpjc8ygg"]
+[gd_scene load_steps=10 format=3 uid="uid://ilgtvpjc8ygg"]
 
 [ext_resource type="Script" uid="uid://di85d3xcrc7f5" path="res://addons/scene_tools/gui_handler.gd" id="1_atvme"]
+[ext_resource type="PackedScene" uid="uid://bmm78slm8roxk" path="res://addons/modular_browser/user/template/components/theme_setter.tscn" id="1_xns41"]
 [ext_resource type="PackedScene" uid="uid://bseaxebvnrkgn" path="res://addons/modular_browser/user/options/options_button.tscn" id="2_j8wyx"]
 [ext_resource type="Texture2D" uid="uid://b2byjk3m64ir0" path="res://addons/modular_browser/plugin/resources/icons/Instance.svg" id="3_m38gu"]
 [ext_resource type="Texture2D" uid="uid://dn21q7d4tqkqa" path="res://addons/modular_browser/plugin/resources/icons/Info.svg" id="4_xns41"]
 [ext_resource type="Texture2D" uid="uid://bao0rm7vqfgsq" path="res://addons/modular_browser/plugin/resources/icons/Node3D.svg" id="5_1kbom"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmt0l"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0501"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d1c51"]
 content_margin_left = 6.0
@@ -17,16 +28,6 @@ corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmt0l"]
-bg_color = Color(0.6, 0.6, 0.6, 0)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0501"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0.6, 0.6, 0.6, 0)
-
 [node name="Control" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -34,6 +35,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.24, 0.24, 0.24, 1)
+
+[node name="ThemeSetter" parent="BG" instance=ExtResource("1_xns41")]
+overide_color = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -44,14 +57,15 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SceneTools" type="HBoxContainer" parent="VBoxContainer" node_paths=PackedStringArray("snapping_button", "snapping_step", "snapping_offset", "align_to_surface_button", "help_dialog", "version_label", "random_rotation_button", "random_scale_button", "random_rotation_axis", "random_rotation", "scale_x", "scale_y", "scale_z", "rotation_x", "rotation_y", "rotation_z", "scale_link_button", "random_scale", "plane_option", "display_grid_checkbox", "mode_option", "surface_container", "plane_container", "chance_to_spawn_container", "chance_to_spawn", "plane_level", "rotation_step", "side_panel")]
+visible = false
 layout_mode = 2
 script = ExtResource("1_atvme")
 snapping_button = NodePath("../SidePanel/Container/Snapping/MarginContainer/VBoxContainer/SnappingCheckBox")
 snapping_step = NodePath("../SidePanel/Container/Snapping/MarginContainer/VBoxContainer/GridContainer/HBoxContainer/SnappingStep")
 snapping_offset = NodePath("../SidePanel/Container/Snapping/MarginContainer/VBoxContainer/GridContainer/HBoxContainer3/SnappingOffset")
 align_to_surface_button = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/SurfaceContainer")
-help_dialog = NodePath("HelpDialog")
-version_label = NodePath("HelpDialog/VBoxContainer/VersionLabel")
+help_dialog = NodePath("../../HelpDialog")
+version_label = NodePath("../../HelpDialog/VBoxContainer/VersionLabel")
 random_rotation_button = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer/RotationCheckBox")
 random_scale_button = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3/ScaleCheckBox")
 random_rotation_axis = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer/RandomRotationAxis")
@@ -65,77 +79,15 @@ rotation_z = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxCont
 scale_link_button = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer4/ScaleLinkButton")
 random_scale = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3/RandomScale")
 plane_option = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/PlaneContainer/HBoxContainer2/PlaneOption")
-display_grid_checkbox = NodePath("HelpDialog/VBoxContainer/DisplayGrid")
+display_grid_checkbox = NodePath("../../HelpDialog/VBoxContainer/DisplayGrid")
 mode_option = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/ModesContainer/OptionButton")
 surface_container = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/SurfaceContainer")
 plane_container = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/PlaneContainer")
 chance_to_spawn_container = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/ChanceToSpawnContainer")
 chance_to_spawn = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/ChanceToSpawnContainer/ChanceToSpawn")
 plane_level = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/PlaneContainer/HBoxContainer/PlaneLevel")
-rotation_step = NodePath("HelpDialog/VBoxContainer/RotationStep/RotationStep")
+rotation_step = NodePath("../../HelpDialog/VBoxContainer/RotationStep/RotationStep")
 side_panel = NodePath("../SidePanel")
-
-[node name="HelpDialog" type="AcceptDialog" parent="VBoxContainer/SceneTools"]
-title = "About"
-initial_position = 4
-size = Vector2i(304, 400)
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/SceneTools/HelpDialog"]
-offset_left = 8.0
-offset_top = 8.0
-offset_right = 296.0
-offset_bottom = 351.0
-
-[node name="VersionLabel" type="Label" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer"]
-layout_mode = 2
-horizontal_alignment = 1
-
-[node name="Controls" type="Label" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer"]
-layout_mode = 2
-text = "
-Controls:
-LMB - Place
-RMB - Erase
-Q/E - Rotate
-Ctrl + Mouse Wheel - Raise/lower grid"
-horizontal_alignment = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer"]
-layout_mode = 2
-text = "
-Additional settings:"
-horizontal_alignment = 1
-
-[node name="RotationStep" type="HBoxContainer" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="Label" type="Label" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer/RotationStep"]
-layout_mode = 2
-text = "Rotation step"
-horizontal_alignment = 1
-
-[node name="RotationStep" type="LineEdit" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer/RotationStep"]
-auto_translate_mode = 1
-layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "45.0"
-max_length = 5
-
-[node name="DisplayGrid" type="CheckBox" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-button_pressed = true
-text = "Display grid"
-
-[node name="ReadableNodeName" type="CheckBox" parent="VBoxContainer/SceneTools/HelpDialog/VBoxContainer"]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Readable node name"
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -259,7 +211,6 @@ popup/item_2/id = 2
 
 [node name="PlaneContainer" type="GridContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
 auto_translate_mode = 1
-visible = false
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
@@ -494,7 +445,7 @@ text = "+/-"
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "0.0"
+text = "1.0"
 max_length = 5
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer"]
@@ -576,3 +527,62 @@ layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
 text = "0.0"
 max_length = 5
+
+[node name="HelpDialog" type="AcceptDialog" parent="."]
+title = "About"
+initial_position = 4
+size = Vector2i(304, 400)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HelpDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 296.0
+offset_bottom = 351.0
+
+[node name="VersionLabel" type="Label" parent="HelpDialog/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Controls" type="Label" parent="HelpDialog/VBoxContainer"]
+layout_mode = 2
+text = "
+Controls:
+LMB - Place
+RMB - Erase
+Q/E - Rotate
+Ctrl + Mouse Wheel - Raise/lower grid"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="HelpDialog/VBoxContainer"]
+layout_mode = 2
+text = "
+Additional settings:"
+horizontal_alignment = 1
+
+[node name="RotationStep" type="HBoxContainer" parent="HelpDialog/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="HelpDialog/VBoxContainer/RotationStep"]
+layout_mode = 2
+text = "Rotation step"
+horizontal_alignment = 1
+
+[node name="RotationStep" type="LineEdit" parent="HelpDialog/VBoxContainer/RotationStep"]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
+text = "45.0"
+max_length = 5
+
+[node name="DisplayGrid" type="CheckBox" parent="HelpDialog/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+button_pressed = true
+text = "Display grid"
+
+[node name="ReadableNodeName" type="CheckBox" parent="HelpDialog/VBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Readable node name"
