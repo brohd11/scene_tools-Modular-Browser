@@ -38,6 +38,7 @@ var random_rotation_axis: int = 1 # Y
 var scale_linked := true
 var rotation_step := PI / 4.0
 var force_readable_name := false
+var terrain_3D_snap_height := true
 
 var fill_mesh: MeshInstance3D
 var fill_bounding_box: AABB
@@ -143,8 +144,11 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			var result := Utils.raycast_terrain_3d(viewport_camera, terrain_3D_node)
 			if is_nan(result.y):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			var height = terrain_3D_node.data.get_height(result)
+			if terrain_3D_snap_height and result.y < height:
+				result.y = height
 			if snapping_enabled:
-				result = result.snapped(Vector3(snapping_step, snapping_step, snapping_step))
+				result = result.snapped(Vector3(snapping_step, height, snapping_step))
 			if align_to_surface:
 				var normal = terrain_3D_node.data.get_normal(result)
 				if is_nan(normal.y):
@@ -155,21 +159,16 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 
 	
 	if event is InputEventKey:
-		print(event.as_text_keycode())
 		if event.as_text_keycode() == "Shift+Q" and event.is_pressed():
 			base_scale -= Vector3(0.1,0.1,0.1)
 			if base_scale <= Vector3(0.05,0.05,0.05):
 				base_scale = Vector3(0.1,0.1,0.1)
-			plugin.gui_instance.scale_x.text = str(snappedf(base_scale.x, 0.1))
-			plugin.gui_instance.scale_y.text = str(snappedf(base_scale.y, 0.1))
-			plugin.gui_instance.scale_z.text = str(snappedf(base_scale.z, 0.1))
+			plugin.gui_instance._set_scale(base_scale.snappedf(0.1))
 			EditorInterface.get_editor_viewport_3d().set_input_as_handled()
 			return EditorPlugin.AFTER_GUI_INPUT_STOP
 		elif event.as_text_keycode() == "Shift+E" and event.is_pressed():
 			base_scale += Vector3(0.1,0.1,0.1)
-			plugin.gui_instance.scale_x.text = str(snappedf(base_scale.x, 0.1))
-			plugin.gui_instance.scale_y.text = str(snappedf(base_scale.y, 0.1))
-			plugin.gui_instance.scale_z.text = str(snappedf(base_scale.z, 0.1))
+			plugin.gui_instance._set_scale(base_scale.snappedf(0.1))
 			EditorInterface.get_editor_viewport_3d().set_input_as_handled()
 			return EditorPlugin.AFTER_GUI_INPUT_STOP
 		elif event.keycode == KEY_Q and event.is_pressed():
@@ -457,6 +456,9 @@ func load_state(configuration: ConfigFile) -> void:
 
 	#force_readable_name = configuration.get_value(TOOL_NAME, "force_readable_name", force_readable_name)
 	#plugin.gui_instance.force_readable_name_checkbox.set_pressed_no_signal(force_readable_name)
+	
+	terrain_3D_snap_height = configuration.get_value(TOOL_NAME, "terrain_3D_snap_height", true)
+	plugin.gui_instance.terrain_3D_snap_check.button_pressed = terrain_3D_snap_height
 
 
 func save_state(configuration: ConfigFile) -> void:
@@ -478,6 +480,7 @@ func save_state(configuration: ConfigFile) -> void:
 	configuration.set_value(TOOL_NAME, "random_rotation", random_rotation)
 	configuration.set_value(TOOL_NAME, "rotation_step", rotation_step)
 	configuration.set_value(TOOL_NAME, "force_readable_name", force_readable_name)
+	configuration.set_value(TOOL_NAME, "terrain_3D_snap_height", terrain_3D_snap_height)
 
 #endregion
 
@@ -546,6 +549,7 @@ func change_mode(new_mode: Mode) -> void:
 	plugin.gui_instance.plane_container.hide()
 	plugin.gui_instance.chance_to_spawn_container.hide()
 	plugin.gui_instance.terrain_3D_container.hide()
+	plugin.gui_instance.terrain_3D_snap_container.hide()
 	set_grid_visible(false)
 	
 	current_mode = new_mode
@@ -567,6 +571,7 @@ func change_mode(new_mode: Mode) -> void:
 		Mode.TERRAIN3D:
 			plugin.gui_instance.terrain_3D_container.show()
 			plugin.gui_instance.surface_container.show()
+			plugin.gui_instance.terrain_3D_snap_container.show()
 
 
 func _on_scene_changed(scene_root: Node) -> void:
@@ -644,3 +649,6 @@ func set_random_rotation(value: float) -> void:
 
 func set_rotation_step(value: float) -> void:
 	rotation_step = value
+
+func set_terrain_3D_height_snap(toggled: bool) -> void:
+	terrain_3D_snap_height = toggled

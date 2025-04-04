@@ -44,6 +44,8 @@ var plugin_instance: SceneTools
 @onready var terrain_3D_container = %TerrainH
 @onready var terrain_3D_button = %Terrain3DButton
 @onready var terrain_3D_node_lab = %Terrain3DNodeLab
+@onready var terrain_3D_snap_container = %TerrainSnapHeightContainer
+@onready var terrain_3D_snap_check = %TerrainSnapHeightCheck
 
 
 func _ready() -> void:
@@ -91,6 +93,7 @@ func _ready() -> void:
 	set_root_button.pressed.connect(_on_set_root_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
 	terrain_3D_button.pressed.connect(_on_set_terrain_3D_button_pressed)
+	terrain_3D_snap_check.toggled.connect(_on_terrain_3D_snap_check_toggled)
 	
 	# Hide mode specific containers
 	surface_container.hide()
@@ -231,6 +234,9 @@ func _on_rotation_step_text_changed(text: String) -> void:
 
 #func _on_force_readable_name_checkbox_toggled(toggled: bool) -> void:
 	#plugin_instance.place_tool.force_readable_name = toggled
+
+func _on_terrain_3D_snap_check_toggled(toggled:bool) -> void:
+	plugin_instance.place_tool.set_terrain_3D_height_snap(toggled)
 
 #endregion
 
