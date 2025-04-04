@@ -15,9 +15,12 @@ enum Mode {
 	FREE,
 	PLANE,
 	FILL,
+	TERRAIN3D,
 }
 
 var current_mode := Mode.FREE
+
+var terrain_3D_node:Terrain3D
 
 var rotation := Vector3.ZERO
 var snapping_step := 1.0
@@ -71,6 +74,8 @@ func set_root_node(node: Node) -> void:
 			brush.show()
 	plugin.root_node = node
 
+func set_terrain_3D_node(node):
+	terrain_3D_node = node
 
 func set_grid_visible(visible: bool) -> void:
 	if plugin.plugin_enabled:
@@ -87,6 +92,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
 	
 	brush.rotation = rotation
+	brush.scale = base_scale
 	
 	match current_mode:
 		Mode.FREE:
@@ -130,9 +136,43 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 					fill_mesh.position = fill_bounding_box.get_center()
 					fill_mesh.position.y += snapping_step * 0.5
 					fill_mesh.mesh.size = fill_bounding_box.size.abs() + Vector3.ONE * snapping_step
+		
+		Mode.TERRAIN3D:
+			if not is_instance_valid(terrain_3D_node):
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			var result := Utils.raycast_terrain_3d(viewport_camera, terrain_3D_node)
+			if is_nan(result.y):
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			if snapping_enabled:
+				result = result.snapped(Vector3(snapping_step, snapping_step, snapping_step))
+			if align_to_surface:
+				var normal = terrain_3D_node.data.get_normal(result)
+				if is_nan(normal.y):
+					return EditorPlugin.AFTER_GUI_INPUT_PASS
+				brush.transform = align_with_normal(brush.transform, normal)
+			
+			brush.position = result
 
+	
 	if event is InputEventKey:
-		if event.keycode == KEY_Q and event.is_pressed():
+		print(event.as_text_keycode())
+		if event.as_text_keycode() == "Shift+Q" and event.is_pressed():
+			base_scale -= Vector3(0.1,0.1,0.1)
+			if base_scale <= Vector3(0.05,0.05,0.05):
+				base_scale = Vector3(0.1,0.1,0.1)
+			plugin.gui_instance.scale_x.text = str(snappedf(base_scale.x, 0.1))
+			plugin.gui_instance.scale_y.text = str(snappedf(base_scale.y, 0.1))
+			plugin.gui_instance.scale_z.text = str(snappedf(base_scale.z, 0.1))
+			EditorInterface.get_editor_viewport_3d().set_input_as_handled()
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		elif event.as_text_keycode() == "Shift+E" and event.is_pressed():
+			base_scale += Vector3(0.1,0.1,0.1)
+			plugin.gui_instance.scale_x.text = str(snappedf(base_scale.x, 0.1))
+			plugin.gui_instance.scale_y.text = str(snappedf(base_scale.y, 0.1))
+			plugin.gui_instance.scale_z.text = str(snappedf(base_scale.z, 0.1))
+			EditorInterface.get_editor_viewport_3d().set_input_as_handled()
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		elif event.keycode == KEY_Q and event.is_pressed():
 			rotation.y = wrapf(rotation.y + rotation_step, 0.0, TAU)
 			plugin.gui_instance.rotation_y.text = str(roundf(rad_to_deg(rotation.y)))
 			EditorInterface.get_editor_viewport_3d().set_input_as_handled()
@@ -142,6 +182,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			plugin.gui_instance.rotation_y.text = str(roundf(rad_to_deg(rotation.y)))
 			EditorInterface.get_editor_viewport_3d().set_input_as_handled()
 			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		
 
 	if event is InputEventMouseButton:
 		match event.button_index:
@@ -293,7 +334,7 @@ func erase(node: Node) -> void:
 
 func place_asset(asset_path: String, position: Vector3) -> void:
 	var asset_instance := instantiate_asset(asset_path)
-	var asset_name = asset_instance.name
+	var asset_name = ab_lib.Stat.ed_util.name.incremental_name_check_in_nodes(asset_instance.name, plugin.root_node)
 	
 	if asset_instance:
 		plugin.undo_redo.create_action("Place Asset", UndoRedo.MERGE_DISABLE, plugin.scene_root)
@@ -303,7 +344,7 @@ func place_asset(asset_path: String, position: Vector3) -> void:
 		plugin.undo_redo.add_undo_method(plugin.root_node, "remove_child", asset_instance)
 		plugin.undo_redo.commit_action()
 		
-		asset_instance.name = ab_lib.Stat.ed_util.name.incremental_name_check_in_nodes(asset_name, plugin.scene_root)
+		asset_instance.name = asset_name
 		asset_instance.global_position = position
 		set_global_basis(asset_instance)
 
@@ -364,7 +405,7 @@ func set_plane_normal(normal: int) -> void:
 
 func load_state(configuration: ConfigFile) -> void:
 	change_mode(configuration.get_value(TOOL_NAME, "current_mode", current_mode))
-
+	
 	snapping_enabled = configuration.get_value(TOOL_NAME, "snapping_enabled", false)
 	plugin.gui_instance.snapping_button.set_pressed_no_signal(snapping_enabled)
 
@@ -479,10 +520,10 @@ func change_brush(packed_scene: PackedScene) -> void:
 	if new_brush == null:
 		push_error("[%s] Scene's root node must be a Node3D" % plugin.plugin_name)
 		return
-
+	
 	brush = new_brush
 	brush.scale = base_scale
-
+	
 	var brush_children := [brush]
 
 	# Remove collision layers from child nodes to avoid hitting them with a raycast
@@ -501,17 +542,11 @@ func change_brush(packed_scene: PackedScene) -> void:
 		brush.hide()
 
 func change_mode(new_mode: Mode) -> void:
-	# Mode exiting logic
-	match current_mode:
-		Mode.FREE:
-			plugin.gui_instance.surface_container.hide()
-		Mode.PLANE:
-			plugin.gui_instance.plane_container.hide()
-			set_grid_visible(false)
-		Mode.FILL:
-			plugin.gui_instance.plane_container.hide()
-			plugin.gui_instance.chance_to_spawn_container.hide()
-			set_grid_visible(false)
+	plugin.gui_instance.surface_container.hide()
+	plugin.gui_instance.plane_container.hide()
+	plugin.gui_instance.chance_to_spawn_container.hide()
+	plugin.gui_instance.terrain_3D_container.hide()
+	set_grid_visible(false)
 	
 	current_mode = new_mode
 	plugin.gui_instance.mode_option.selected = current_mode
@@ -529,6 +564,10 @@ func change_mode(new_mode: Mode) -> void:
 			plugin.gui_instance.chance_to_spawn_container.show()
 			if snapping_enabled:
 				set_grid_visible(grid_display_enabled)
+		Mode.TERRAIN3D:
+			plugin.gui_instance.terrain_3D_container.show()
+			plugin.gui_instance.surface_container.show()
+
 
 func _on_scene_changed(scene_root: Node) -> void:
 	if is_instance_valid(plugin.scene_root):
@@ -556,6 +595,9 @@ func _on_scene_closed(path: String) -> void:
 			plugin.scene_root.remove_child(grid_mesh)
 
 func _on_plugin_enabled(_enabled: bool) -> void:
+	if current_mode == Mode.TERRAIN3D:
+		if not EditorInterface.is_plugin_enabled("terrain_3d"):
+			change_mode(0)
 	set_root_node(plugin.root_node)
 
 func set_scale_link_toggled(toggled: bool) -> void:

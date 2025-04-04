@@ -9,6 +9,7 @@ const PlaceTool := preload("res://addons/scene_tools/tools/place.gd")
 
 
 ## ModBrowser Start
+const TERRAIN3D_CHECK_PATH = "res://addons/scene_tools/config/hidden/terrain_3D_check.gd"
 const CONFIG_PATH = "res://addons/scene_tools/config/scene_tools.cfg"
 
 const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
@@ -36,10 +37,16 @@ static var plugin_instance
 
 var gui_instance: GuiHandler
 
-var root_node: Node:
+var root_node: Node: # scene added to here
 	set(val):
 		root_node = val
 		_get_state()
+var terrain3D_node:
+	set(val):
+		terrain3D_node = val
+		_get_state()
+
+
 
 var scene_root: Node
 var undo_redo: EditorUndoRedoManager
@@ -69,6 +76,7 @@ func _enter_tree() -> void:
 	EditorInterface.get_selection().selection_changed.connect(_on_editor_selection_changed, 1)
 
 func _exit_tree() -> void:
+	save_config()
 	for tool in tools: # doesn't seem to cause issues, but may be unnecessary?
 		tool.exit()
 
@@ -137,12 +145,27 @@ func set_plugin_enabled(enabled: bool) -> void:
 		var selected = EditorInterface.get_selection().get_selected_nodes()
 		if not selected.is_empty():
 			return
+		# prefer neither root_node or ed_scene_root to avoid bounding box
 		var ed_scene_root = EditorInterface.get_edited_scene_root()
-		if ed_scene_root is Node3D:
-			EditorInterface.edit_node(ed_scene_root)
-		else:
+		if ed_scene_root is not Node3D:
 			print("Can't use in non-3D scenes.")
 			set_plugin_enabled(false)
+			return
+		
+		if ed_scene_root.get_child_count() == 0:
+			EditorInterface.edit_node(ed_scene_root)
+		else:
+			var children = ed_scene_root.get_children()
+			
+			for c in children:
+				if c != root_node and not check_terrain_3D_node(c) and c.owner == ed_scene_root:
+					EditorInterface.edit_node(c)
+					return
+			if root_node:
+				EditorInterface.edit_node(root_node)
+			else:
+				EditorInterface.edit_node(ed_scene_root.get_child(0))
+			
 
 func update_selected_assets(new_selected:Array) -> void:
 	# Remove directories
@@ -188,27 +211,39 @@ func update_selected_assets(new_selected:Array) -> void:
 
 
 func _set_state(state: Dictionary) -> void:
-	var path = state.get("SceneToolsRootPath")
-	var node_path = NodePath(path)
+	var root_path = state.get("SceneToolsRootPath")
+	var terrain_3d_path = state.get("SceneToolsTerrainPath")
 	var editor_scene_root = EditorInterface.get_edited_scene_root()
-	var last_root
-	if not editor_scene_root.has_node(node_path):
-		last_root = editor_scene_root
+	if root_path:
+		var node_path = NodePath(root_path)
+		var last_root
+		if not editor_scene_root.has_node(node_path):
+			last_root = editor_scene_root
+		else:
+			last_root = editor_scene_root.get_node(node_path)
+		set_root_node(last_root)
+	if terrain_3d_path:
+		var node_path = NodePath(terrain_3d_path)
+		if editor_scene_root.has_node(node_path):
+			var terrain = editor_scene_root.get_node(node_path)
+			set_terrain_3D_node(terrain)
+		else:
+			set_terrain_3D_node(null)
 	else:
-		last_root = editor_scene_root.get_node(node_path)
-	
-	set_root_node(last_root)
+		set_terrain_3D_node(null)
 
 func _get_state():
-	if not root_node:
-		return
+	var state = {}
 	var editor_scene_root = EditorInterface.get_edited_scene_root()
-	if root_node != editor_scene_root and root_node.owner != editor_scene_root:
-		return
-	var path:NodePath = editor_scene_root.get_path_to(root_node)
-	var state = {
-		"SceneToolsRootPath": path,
-		}
+	if root_node:
+		if root_node == editor_scene_root or root_node.owner == editor_scene_root:
+			var path:NodePath = editor_scene_root.get_path_to(root_node)
+			state["SceneToolsRootPath"] = path
+	if terrain3D_node:
+		if terrain3D_node == editor_scene_root or terrain3D_node.owner == editor_scene_root:
+			var path:NodePath = editor_scene_root.get_path_to(terrain3D_node)
+			state["SceneToolsTerrainPath"] = path
+	
 	return state
 
 func set_root_node(node):
@@ -218,6 +253,21 @@ func set_root_node(node):
 	if is_instance_valid(gui_instance):
 		gui_instance.set_root_node_name(root_node)
 
+func set_terrain_3D_node(node):
+	terrain3D_node = node
+	for tool in tools:
+		if tool.has_method("set_terrain_3D_node"):
+			tool.set_terrain_3D_node(node)
+	if is_instance_valid(gui_instance):
+		gui_instance.set_terrain_3D_node_name(node)
+
 func editor_grab_focus():
 	if not EditorInterface.get_base_control().get_window().has_focus():
 		EditorInterface.get_base_control().get_window().grab_focus()
+
+static func check_terrain_3D_node(node):
+	var check_script = load(TERRAIN3D_CHECK_PATH)
+	var is_terrain = check_script.check_terrain_3D_node(node)
+	if not is_terrain:
+		return false
+	return true

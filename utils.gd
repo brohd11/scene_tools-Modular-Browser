@@ -11,3 +11,11 @@ static func raycast(camera: Camera3D) -> Dictionary:
 static func raycast_plane(camera: Camera3D, plane: Plane) -> Variant:
 	var mousepos := EditorInterface.get_editor_viewport_3d().get_mouse_position()
 	return plane.intersects_ray(camera.project_ray_origin(mousepos), camera.project_ray_normal(mousepos) * 1000.0)
+
+
+static func raycast_terrain_3d(camera: Camera3D, terrain3D_node:Terrain3D) -> Vector3:
+	var mousepos := EditorInterface.get_editor_viewport_3d().get_mouse_position()
+	var origin := camera.project_ray_origin(mousepos)
+	var end := origin + camera.project_ray_normal(mousepos) * 5000.0
+	
+	return terrain3D_node.get_intersection(origin, end)

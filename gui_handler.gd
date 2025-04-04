@@ -3,6 +3,8 @@ extends Control
 
 const SceneTools = preload("res://addons/scene_tools/plugin.gd")
 
+
+
 var plugin_instance: SceneTools
 
 @export var snapping_button: CheckBox
@@ -39,6 +41,9 @@ var plugin_instance: SceneTools
 @onready var settings_button = %SettingsButton
 @onready var set_root_button = %SetRootButton
 @onready var root_name_label = %RootNameLabel
+@onready var terrain_3D_container = %TerrainH
+@onready var terrain_3D_button = %Terrain3DButton
+@onready var terrain_3D_node_lab = %Terrain3DNodeLab
 
 
 func _ready() -> void:
@@ -47,10 +52,15 @@ func _ready() -> void:
 		push_error("Scene Tools plugin not found.")
 		return
 	
+	root_name_label.text = "Set parent node"
+	terrain_3D_node_lab.text = "Set Terrain3D Node"
+	
 	plugin_instance.gui_instance = self
 	
 	if plugin_instance.root_node:
 		_set_root_node(plugin_instance.root_node)
+	if plugin_instance.terrain3D_node:
+		_set_terrain_3D_node(plugin_instance.terrain3D_node)
 	
 	snapping_button.toggled.connect(_on_snapping_toggled)
 	plane_level.text_changed.connect(_on_plane_level_text_changed)
@@ -80,6 +90,7 @@ func _ready() -> void:
 	
 	set_root_button.pressed.connect(_on_set_root_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
+	terrain_3D_button.pressed.connect(_on_set_terrain_3D_button_pressed)
 	
 	# Hide mode specific containers
 	surface_container.hide()
@@ -88,17 +99,18 @@ func _ready() -> void:
 	
 	plugin_instance.load_config()
 
-func _exit_tree() -> void:
-	if is_instance_valid(plugin_instance):
-		if is_queued_for_deletion():
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		if is_instance_valid(plugin_instance):
+			plugin_instance.save_config()
 			plugin_instance.plugin_enabled = false
 			plugin_instance.gui_instance = null
-			plugin_instance.save_config()
-
 
 #region Settings
 
 func _on_mode_option_button_item_selected(index: int) -> void:
+	if not EditorInterface.is_plugin_enabled("terrain_3d"):
+		index = 0
 	plugin_instance.place_tool.change_mode(index)
 	plugin_instance.editor_grab_focus()
 
@@ -236,13 +248,35 @@ func _on_set_root_button_pressed():
 	_set_root_node(node)
 
 func _set_root_node(node:Node):
-	if node is not Node3D:
-		print("Select Node3D.")
+	if node is not Node3D and node is not Node:
+		print("Select Node or Node3D.")
 		return
 	#plugin_instance.root_node = node
 	SceneTools.plugin_instance.set_root_node(node)
 
 func set_root_node_name(node):
-	print(node)
 	root_name_label.text = node.name
 	root_name_label.tooltip_text = node.name
+
+
+func _on_set_terrain_3D_button_pressed():
+	var selected_nodes = EditorInterface.get_selection().get_selected_nodes()
+	if selected_nodes.is_empty():
+		print("No node selected.")
+		return
+	var node = selected_nodes[0]
+	_set_terrain_3D_node(node)
+
+func _set_terrain_3D_node(node):
+	if not SceneTools.check_terrain_3D_node(node):
+		print("Must be Terrain3D")
+		return
+	SceneTools.plugin_instance.set_terrain_3D_node(node)
+
+func set_terrain_3D_node_name(node):
+	if node:
+		terrain_3D_node_lab.text = node.name
+		terrain_3D_node_lab.tooltip_text = node.name
+	else:
+		terrain_3D_node_lab.text = "null"
+		terrain_3D_node_lab.tooltip_text = "null"

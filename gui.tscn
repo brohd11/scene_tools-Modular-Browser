@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bseaxebvnrkgn" path="res://addons/modular_browser/user/options/options_button.tscn" id="2_j8wyx"]
 [ext_resource type="Texture2D" uid="uid://b2byjk3m64ir0" path="res://addons/modular_browser/plugin/resources/icons/Instance.svg" id="3_m38gu"]
 [ext_resource type="Texture2D" uid="uid://dn21q7d4tqkqa" path="res://addons/modular_browser/plugin/resources/icons/Info.svg" id="4_xns41"]
-[ext_resource type="Texture2D" uid="uid://bao0rm7vqfgsq" path="res://addons/modular_browser/plugin/resources/icons/Node3D.svg" id="5_1kbom"]
+[ext_resource type="Texture2D" uid="uid://bnxhdmd5o8yjq" path="res://addons/gopilot_assist/textures/Node.png" id="5_xns41"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmt0l"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
@@ -132,7 +132,7 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-icon = ExtResource("5_1kbom")
+icon = ExtResource("5_xns41")
 
 [node name="ColorRect" type="ColorRect" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH"]
 custom_minimum_size = Vector2(205, 0)
@@ -200,17 +200,20 @@ text = "Mode:"
 [node name="OptionButton" type="OptionButton" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/ModesContainer"]
 layout_mode = 2
 focus_mode = 0
-selected = 1
-item_count = 3
+selected = 3
+item_count = 4
 popup/item_0/text = "Free"
 popup/item_0/id = 0
 popup/item_1/text = "Plane"
 popup/item_1/id = 1
 popup/item_2/text = "Fill"
 popup/item_2/id = 2
+popup/item_3/text = "Terrain3D"
+popup/item_3/id = 3
 
 [node name="PlaneContainer" type="GridContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
 auto_translate_mode = 1
+visible = false
 layout_mode = 2
 theme_override_constants/h_separation = 4
 theme_override_constants/v_separation = 4
@@ -251,9 +254,9 @@ max_length = 5
 
 [node name="SurfaceContainer" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
 auto_translate_mode = 1
-visible = false
 layout_mode = 2
 focus_mode = 0
+button_pressed = true
 text = "Align to surface"
 flat = true
 
@@ -275,6 +278,39 @@ max_length = 3
 [node name="Label2" type="Label" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/ChanceToSpawnContainer"]
 layout_mode = 2
 text = "%"
+
+[node name="TerrainH" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Terrain3DButton" type="Button" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainH"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Set Terrain3D"
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainH"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+color = Color(0, 0, 0, 0.271)
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainH/ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 3
+theme_override_constants/margin_right = 3
+
+[node name="Terrain3DNodeLab" type="Label" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainH/ColorRect/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "null"
+mouse_filter = 1
+text = "null"
+clip_text = true
 
 [node name="Transform" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]
 auto_translate_mode = 1
@@ -367,7 +403,7 @@ auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "1.0"
+text = "0.6"
 max_length = 3
 
 [node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
@@ -379,7 +415,7 @@ auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "1.0"
+text = "0.6"
 max_length = 3
 
 [node name="Label4" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
@@ -391,7 +427,7 @@ auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "1.0"
+text = "0.6"
 max_length = 3
 
 [node name="Randomization" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]
@@ -545,11 +581,11 @@ horizontal_alignment = 1
 
 [node name="Controls" type="Label" parent="HelpDialog/VBoxContainer"]
 layout_mode = 2
-text = "
-Controls:
+text = "Controls:
 LMB - Place
 RMB - Erase
 Q/E - Rotate
+Shift+Q/E - Scale
 Ctrl + Mouse Wheel - Raise/lower grid"
 horizontal_alignment = 1
 
