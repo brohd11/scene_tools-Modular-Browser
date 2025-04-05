@@ -20,7 +20,7 @@ enum Mode {
 
 var current_mode := Mode.FREE
 
-var terrain_3D_node:Terrain3D
+var terrain_3D_node
 
 var rotation := Vector3.ZERO
 var snapping_step := 1.0

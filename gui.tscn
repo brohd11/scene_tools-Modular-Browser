@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://bseaxebvnrkgn" path="res://addons/modular_browser/user/options/options_button.tscn" id="2_j8wyx"]
 [ext_resource type="Texture2D" uid="uid://b2byjk3m64ir0" path="res://addons/modular_browser/plugin/resources/icons/Instance.svg" id="3_m38gu"]
 [ext_resource type="Texture2D" uid="uid://dn21q7d4tqkqa" path="res://addons/modular_browser/plugin/resources/icons/Info.svg" id="4_xns41"]
-[ext_resource type="Texture2D" uid="uid://bnxhdmd5o8yjq" path="res://addons/gopilot_assist/textures/Node.png" id="5_xns41"]
+[ext_resource type="Texture2D" uid="uid://1r064acw3svi" path="res://addons/modular_browser/plugin/resources/icons/Node.svg" id="5_xns41"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmt0l"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
@@ -281,7 +281,6 @@ text = "%"
 
 [node name="TerrainH" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 
 [node name="Terrain3DButton" type="Button" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainH"]
@@ -315,13 +314,13 @@ clip_text = true
 
 [node name="TerrainSnapHeightContainer" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 
 [node name="TerrainSnapHeightCheck" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainSnapHeightContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
+button_pressed = true
 text = "Snap to Terrain Height"
 
 [node name="Transform" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]
