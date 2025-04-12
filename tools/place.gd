@@ -603,7 +603,8 @@ func _on_plugin_enabled(_enabled: bool) -> void:
 	if current_mode == Mode.TERRAIN3D:
 		if not EditorInterface.is_plugin_enabled("terrain_3d"):
 			change_mode(0)
-	set_root_node(plugin.root_node)
+	if is_instance_valid(plugin.root_node):
+		set_root_node(plugin.root_node)
 
 func set_scale_link_toggled(toggled: bool) -> void:
 	scale_linked = toggled
