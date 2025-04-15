@@ -64,9 +64,9 @@ var current_tool: Tool = place_tool
 
 
 func _enter_tree() -> void:
-	
 	plugin_instance = self
 	
+	await get_tree().process_frame
 	_connect_global_bus()
 	
 	scene_changed.connect(_on_scene_changed)

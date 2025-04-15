@@ -256,7 +256,6 @@ max_length = 5
 auto_translate_mode = 1
 layout_mode = 2
 focus_mode = 0
-button_pressed = true
 text = "Align to surface"
 flat = true
 
@@ -322,6 +321,17 @@ layout_mode = 2
 focus_mode = 0
 button_pressed = true
 text = "Snap to Terrain Height"
+
+[node name="TerrainAllCollisionsContainer" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TerrainAllCollisionsCheck" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainAllCollisionsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+button_pressed = true
+text = "Use All Collision Shapes"
 
 [node name="Transform" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]
 auto_translate_mode = 1
@@ -492,7 +502,7 @@ text = "+/-"
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "1.0"
+text = "0.0"
 max_length = 5
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer"]

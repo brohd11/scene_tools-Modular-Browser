@@ -39,6 +39,7 @@ var scale_linked := true
 var rotation_step := PI / 4.0
 var force_readable_name := false
 var terrain_3D_snap_height := true
+var terrain_3D_allow_all_col := false
 
 var fill_mesh: MeshInstance3D
 var fill_bounding_box: AABB
@@ -141,21 +142,35 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		Mode.TERRAIN3D:
 			if not is_instance_valid(terrain_3D_node):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			var result := Utils.raycast_terrain_3d(viewport_camera, terrain_3D_node)
-			if is_nan(result.y):
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			var height = terrain_3D_node.data.get_height(result)
-			if terrain_3D_snap_height and result.y < height:
-				result.y = height
-			if snapping_enabled:
-				result = result.snapped(Vector3(snapping_step, height, snapping_step))
-			if align_to_surface:
-				var normal = terrain_3D_node.data.get_normal(result)
-				if is_nan(normal.y):
-					return EditorPlugin.AFTER_GUI_INPUT_PASS
-				brush.transform = align_with_normal(brush.transform, normal)
 			
-			brush.position = result
+			var has_other_col = false
+			if terrain_3D_allow_all_col:
+				var result := Utils.raycast(viewport_camera)
+				if not result.is_empty():
+					if snapping_enabled:
+						result.position = result.position.snapped(Vector3(snapping_step, snapping_step, snapping_step))
+					if align_to_surface:
+						brush.transform = align_with_normal(brush.transform, result.normal)
+					
+					brush.position = result.position
+					has_other_col = true
+			
+			if not has_other_col:
+				var result := Utils.raycast_terrain_3d(viewport_camera, terrain_3D_node)
+				if is_nan(result.y):
+					return EditorPlugin.AFTER_GUI_INPUT_PASS
+				var height = terrain_3D_node.data.get_height(result)
+				if terrain_3D_snap_height and result.y < height:
+					result.y = height
+				if snapping_enabled:
+					result = result.snapped(Vector3(snapping_step, height, snapping_step))
+				if align_to_surface:
+					var normal = terrain_3D_node.data.get_normal(result)
+					if is_nan(normal.y):
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
+					brush.transform = align_with_normal(brush.transform, normal)
+				
+				brush.position = result
 
 	
 	if event is InputEventKey:
@@ -459,6 +474,9 @@ func load_state(configuration: ConfigFile) -> void:
 	
 	terrain_3D_snap_height = configuration.get_value(TOOL_NAME, "terrain_3D_snap_height", true)
 	plugin.gui_instance.terrain_3D_snap_check.button_pressed = terrain_3D_snap_height
+	
+	terrain_3D_allow_all_col = configuration.get_value(TOOL_NAME, "terrain_3D_allow_all_col", false)
+	plugin.gui_instance.terrain_3D_all_collisions_check.button_pressed = terrain_3D_allow_all_col
 
 
 func save_state(configuration: ConfigFile) -> void:
@@ -481,6 +499,7 @@ func save_state(configuration: ConfigFile) -> void:
 	configuration.set_value(TOOL_NAME, "rotation_step", rotation_step)
 	configuration.set_value(TOOL_NAME, "force_readable_name", force_readable_name)
 	configuration.set_value(TOOL_NAME, "terrain_3D_snap_height", terrain_3D_snap_height)
+	configuration.set_value(TOOL_NAME, "terrain_3D_allow_all_col", terrain_3D_allow_all_col)
 
 #endregion
 
@@ -550,6 +569,7 @@ func change_mode(new_mode: Mode) -> void:
 	plugin.gui_instance.chance_to_spawn_container.hide()
 	plugin.gui_instance.terrain_3D_container.hide()
 	plugin.gui_instance.terrain_3D_snap_container.hide()
+	plugin.gui_instance.terrain_3D_all_col_container.hide()
 	set_grid_visible(false)
 	
 	current_mode = new_mode
@@ -572,6 +592,7 @@ func change_mode(new_mode: Mode) -> void:
 			plugin.gui_instance.terrain_3D_container.show()
 			plugin.gui_instance.surface_container.show()
 			plugin.gui_instance.terrain_3D_snap_container.show()
+			plugin.gui_instance.terrain_3D_all_col_container.show()
 
 
 func _on_scene_changed(scene_root: Node) -> void:
@@ -653,3 +674,6 @@ func set_rotation_step(value: float) -> void:
 
 func set_terrain_3D_height_snap(toggled: bool) -> void:
 	terrain_3D_snap_height = toggled
+
+func set_terrain_3D_allow_all_col(toggled: bool) -> void:
+	terrain_3D_allow_all_col = toggled
