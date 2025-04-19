@@ -152,9 +152,9 @@ theme_override_constants/margin_right = 3
 [node name="RootNameLabel" type="Label" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH/ColorRect/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Control"
+tooltip_text = "Editor"
 mouse_filter = 1
-text = "Control"
+text = "Editor"
 clip_text = true
 
 [node name="SidePanel" type="ScrollContainer" parent="VBoxContainer"]
@@ -306,9 +306,9 @@ theme_override_constants/margin_right = 3
 [node name="Terrain3DNodeLab" type="Label" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer/TerrainH/ColorRect/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "null"
+tooltip_text = "Terrain3D"
 mouse_filter = 1
-text = "null"
+text = "Terrain3D"
 clip_text = true
 
 [node name="TerrainSnapHeightContainer" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
@@ -319,7 +319,6 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-button_pressed = true
 text = "Snap to Terrain Height"
 
 [node name="TerrainAllCollisionsContainer" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
@@ -330,7 +329,6 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-button_pressed = true
 text = "Use All Collision Shapes"
 
 [node name="Transform" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]

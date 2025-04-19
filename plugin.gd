@@ -147,6 +147,8 @@ func set_plugin_enabled(enabled: bool) -> void:
 	current_tool._on_plugin_enabled(enabled)
 	if enabled:
 		var selected = EditorInterface.get_selection().get_selected_nodes()
+		if selected.size() > 1:
+			selected.clear()
 		if not selected.is_empty():
 			return
 		# prefer neither root_node or ed_scene_root to avoid bounding box

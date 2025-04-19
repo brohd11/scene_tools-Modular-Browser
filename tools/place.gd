@@ -86,7 +86,6 @@ func set_grid_visible(visible: bool) -> void:
 				grid_mesh.set_visible(visible)
 
 
-
 #region RayCast/Input
 
 func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
@@ -305,7 +304,7 @@ func fill(bounding_box: AABB) -> void:
 		for y in range(steps_y):
 			for z in range(steps_z):
 				var random_number := randi_range(0, 100)
-
+				
 				if chance_to_spawn == 100 or chance_to_spawn > random_number:
 					var asset_path: String = plugin.selected_assets.pick_random()
 					var instance_position := Vector3(
@@ -313,13 +312,12 @@ func fill(bounding_box: AABB) -> void:
 						bounding_box.position.y + y * snapping_step,
 						bounding_box.position.z + z * snapping_step
 						)
-
+					
 					var asset_instance := instantiate_asset(asset_path)
-
 					if asset_instance:
 						asset_instance.position = instance_position
 						asset_instances.append(asset_instance)
-
+	
 	if not asset_instances.is_empty():
 		plugin.undo_redo.create_action("Fill Assets", UndoRedo.MERGE_DISABLE, plugin.scene_root)
 		for asset_instance in asset_instances:
@@ -328,9 +326,9 @@ func fill(bounding_box: AABB) -> void:
 				plugin.undo_redo.add_do_property(asset_instance, "owner", plugin.scene_root)
 				plugin.undo_redo.add_do_reference(asset_instance)
 				plugin.undo_redo.add_undo_method(plugin.root_node, "remove_child", asset_instance)
-
+		
 		plugin.undo_redo.commit_action()
-
+		
 		# We can't apply global position before committing action, so we do it here instead.
 		for asset_instance in asset_instances:
 			if asset_instance:
@@ -497,7 +495,7 @@ func save_state(configuration: ConfigFile) -> void:
 	configuration.set_value(TOOL_NAME, "scale_linked", scale_linked)
 	configuration.set_value(TOOL_NAME, "random_rotation", random_rotation)
 	configuration.set_value(TOOL_NAME, "rotation_step", rotation_step)
-	configuration.set_value(TOOL_NAME, "force_readable_name", force_readable_name)
+	#configuration.set_value(TOOL_NAME, "force_readable_name", force_readable_name)
 	configuration.set_value(TOOL_NAME, "terrain_3D_snap_height", terrain_3D_snap_height)
 	configuration.set_value(TOOL_NAME, "terrain_3D_allow_all_col", terrain_3D_allow_all_col)
 
@@ -536,9 +534,9 @@ func set_align_to_surface(value: bool) -> void:
 func change_brush(packed_scene: PackedScene) -> void:
 	if is_instance_valid(brush):
 		brush.free()
-
+	
 	var new_brush := packed_scene.instantiate() as Node3D
-
+	
 	if new_brush == null:
 		push_error("[%s] Scene's root node must be a Node3D" % plugin.plugin_name)
 		return
@@ -547,19 +545,19 @@ func change_brush(packed_scene: PackedScene) -> void:
 	brush.scale = base_scale
 	
 	var brush_children := [brush]
-
+	
 	# Remove collision layers from child nodes to avoid hitting them with a raycast
 	while not brush_children.is_empty():
 		var child := brush_children.pop_back() as Node
 		if child is CollisionObject3D or child is CSGShape3D:
 			child.collision_layer = 0
 		brush_children.append_array(child.get_children())
-
+	
 	if plugin.scene_root:
 		plugin.scene_root.add_child(brush)
 	else:
 		_on_scene_changed(EditorInterface.get_edited_scene_root())
-
+	
 	if not plugin.root_node or not plugin.plugin_enabled:
 		brush.hide()
 
@@ -644,7 +642,6 @@ func set_rotation(rot: Vector3) -> void:
 
 func set_global_basis(node: Node3D) -> void:
 	var basis := brush.basis.orthonormalized()
-
 	var rotation_range := 0.0
 	if random_rotation_enabled:
 		rotation_range = randf_range(-random_rotation, random_rotation)
@@ -655,15 +652,15 @@ func set_global_basis(node: Node3D) -> void:
 				basis = basis.rotated(basis.y, rotation_range)
 			2:
 				basis = basis.rotated(basis.z, rotation_range)
-
+	
 	var scale_range := 0.0
 	if random_scale_enabled:
 		scale_range = randf_range(-random_scale, random_scale)
-
+	
 	basis.x *= base_scale.x + scale_range
 	basis.y *= base_scale.y + scale_range
 	basis.z *= base_scale.z + scale_range
-
+	
 	node.global_basis = basis
 
 func set_random_rotation(value: float) -> void:
