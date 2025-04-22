@@ -30,6 +30,7 @@ var plane_normal: int = 0
 var align_to_surface := false
 var base_scale := Vector3.ONE
 var random_scale := 0.0
+var position := Vector3.ZERO
 var chance_to_spawn: int = 100
 var random_scale_enabled := false
 var random_rotation_enabled := false
@@ -141,7 +142,9 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 		Mode.TERRAIN3D:
 			if not is_instance_valid(terrain_3D_node):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			
+			if not terrain_3D_node.owner == EditorInterface.get_edited_scene_root():
+				clear_brush()
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			var has_other_col = false
 			if terrain_3D_allow_all_col:
 				var result := Utils.raycast(viewport_camera)
@@ -152,6 +155,7 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 						brush.transform = align_with_normal(brush.transform, result.normal)
 					
 					brush.position = result.position
+					brush.position = brush.position + position
 					has_other_col = true
 			
 			if not has_other_col:
@@ -170,7 +174,9 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 					brush.transform = align_with_normal(brush.transform, normal)
 				
 				brush.position = result
-
+				brush.position = brush.position + (position)
+	
+	
 	
 	if event is InputEventKey:
 		if event.as_text_keycode() == "Shift+Q" and event.is_pressed():
@@ -531,6 +537,10 @@ func set_chance_to_spawn(value: int) -> void:
 func set_align_to_surface(value: bool) -> void:
 	align_to_surface = value
 
+func clear_brush():
+	if is_instance_valid(brush):
+		brush.free()
+
 func change_brush(packed_scene: PackedScene) -> void:
 	if is_instance_valid(brush):
 		brush.free()
@@ -619,6 +629,9 @@ func _on_scene_closed(path: String) -> void:
 			plugin.scene_root.remove_child(grid_mesh)
 
 func _on_plugin_enabled(_enabled: bool) -> void:
+	if not _enabled:
+		clear_brush()
+		
 	if current_mode == Mode.TERRAIN3D:
 		if not EditorInterface.is_plugin_enabled("terrain_3d"):
 			change_mode(0)
@@ -639,6 +652,9 @@ func set_random_rotation_axis(index: int) -> void:
 
 func set_rotation(rot: Vector3) -> void:
 	rotation = rot
+
+func set_position(pos:Vector3) -> void:
+	position = pos
 
 func set_global_basis(node: Node3D) -> void:
 	var basis := brush.basis.orthonormalized()

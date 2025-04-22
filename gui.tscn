@@ -56,7 +56,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SceneTools" type="HBoxContainer" parent="VBoxContainer" node_paths=PackedStringArray("snapping_button", "snapping_step", "snapping_offset", "align_to_surface_button", "help_dialog", "version_label", "random_rotation_button", "random_scale_button", "random_rotation_axis", "random_rotation", "scale_x", "scale_y", "scale_z", "rotation_x", "rotation_y", "rotation_z", "scale_link_button", "random_scale", "plane_option", "display_grid_checkbox", "mode_option", "surface_container", "plane_container", "chance_to_spawn_container", "chance_to_spawn", "plane_level", "rotation_step", "side_panel")]
+[node name="SceneTools" type="HBoxContainer" parent="VBoxContainer" node_paths=PackedStringArray("snapping_button", "snapping_step", "snapping_offset", "align_to_surface_button", "help_dialog", "version_label", "random_rotation_button", "random_scale_button", "random_rotation_axis", "random_rotation", "scale_x", "scale_y", "scale_z", "rotation_x", "rotation_y", "rotation_z", "position_x", "position_y", "position_z", "scale_link_button", "random_scale", "plane_option", "display_grid_checkbox", "mode_option", "surface_container", "plane_container", "chance_to_spawn_container", "chance_to_spawn", "plane_level", "rotation_step", "side_panel")]
 visible = false
 layout_mode = 2
 script = ExtResource("1_atvme")
@@ -70,12 +70,15 @@ random_rotation_button = NodePath("../SidePanel/Container/Randomization/MarginCo
 random_scale_button = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3/ScaleCheckBox")
 random_rotation_axis = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer/RandomRotationAxis")
 random_rotation = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer/RandomRotation")
-scale_x = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3/ScaleX")
-scale_y = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3/ScaleY")
-scale_z = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3/ScaleZ")
-rotation_x = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer/RotationX")
-rotation_y = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer/RotationY")
-rotation_z = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer/RotationZ")
+scale_x = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH/ScaleX")
+scale_y = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH/ScaleY")
+scale_z = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH/ScaleZ")
+rotation_x = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH/RotationX")
+rotation_y = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH/RotationY")
+rotation_z = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH/RotationZ")
+position_x = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH/PositionX")
+position_y = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH/PositionY")
+position_z = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH/PositionZ")
 scale_link_button = NodePath("../SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer4/ScaleLinkButton")
 random_scale = NodePath("../SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3/RandomScale")
 plane_option = NodePath("../SidePanel/Container/Modes/MarginContainer/VBoxContainer/PlaneContainer/HBoxContainer2/PlaneOption")
@@ -319,6 +322,7 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
+button_pressed = true
 text = "Snap to Terrain Height"
 
 [node name="TerrainAllCollisionsContainer" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Modes/MarginContainer/VBoxContainer"]
@@ -357,14 +361,14 @@ layout_mode = 2
 layout_mode = 2
 text = "Rotation"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer"]
+[node name="RotH" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Label2" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH"]
 layout_mode = 2
 text = "X"
 
-[node name="RotationX" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="RotationX" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH"]
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
@@ -372,11 +376,11 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
 text = "0"
 max_length = 3
 
-[node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH"]
 layout_mode = 2
 text = "Y"
 
-[node name="RotationY" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="RotationY" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH"]
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
@@ -384,11 +388,11 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
 text = "0"
 max_length = 3
 
-[node name="Label4" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Label4" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH"]
 layout_mode = 2
 text = "Z"
 
-[node name="RotationZ" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="RotationZ" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/RotH"]
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
@@ -410,14 +414,14 @@ toggle_mode = true
 button_pressed = true
 icon = ExtResource("3_m38gu")
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer"]
+[node name="ScaleH" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
+[node name="Label2" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH"]
 layout_mode = 2
 text = "X"
 
-[node name="ScaleX" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
+[node name="ScaleX" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH"]
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
@@ -425,11 +429,11 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
 text = "1.0"
 max_length = 3
 
-[node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
+[node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH"]
 layout_mode = 2
 text = "Y"
 
-[node name="ScaleY" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
+[node name="ScaleY" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH"]
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
@@ -437,16 +441,59 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
 text = "1.0"
 max_length = 3
 
-[node name="Label4" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
+[node name="Label4" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH"]
 layout_mode = 2
 text = "Z"
 
-[node name="ScaleZ" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/HBoxContainer3"]
+[node name="ScaleZ" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/ScaleH"]
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_constants/minimum_character_width = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
 text = "1.0"
+max_length = 3
+
+[node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Position(Terrain3D Mode)"
+
+[node name="PosH" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH"]
+layout_mode = 2
+text = "X"
+
+[node name="PositionX" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH"]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_constants/minimum_character_width = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
+text = "0"
+max_length = 3
+
+[node name="Label3" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH"]
+layout_mode = 2
+text = "Y"
+
+[node name="PositionY" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH"]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_constants/minimum_character_width = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
+text = "0"
+max_length = 3
+
+[node name="Label4" type="Label" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH"]
+layout_mode = 2
+text = "Z"
+
+[node name="PositionZ" type="LineEdit" parent="VBoxContainer/SidePanel/Container/Transform/MarginContainer/VBoxContainer/PosH"]
+auto_translate_mode = 1
+layout_mode = 2
+theme_override_constants/minimum_character_width = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
+text = "0"
 max_length = 3
 
 [node name="Randomization" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]
@@ -477,6 +524,7 @@ layout_mode = 2
 [node name="RotationCheckBox" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
+button_pressed = true
 text = "Rotation"
 
 [node name="RandomRotationAxis" type="OptionButton" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer"]
@@ -500,7 +548,7 @@ text = "+/-"
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "0.0"
+text = "360.0"
 max_length = 5
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer"]
@@ -509,6 +557,7 @@ layout_mode = 2
 [node name="ScaleCheckBox" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
 focus_mode = 0
+button_pressed = true
 text = "Scale"
 
 [node name="Label" type="Label" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3"]
@@ -520,7 +569,7 @@ text = "+/-"
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "0.0"
+text = "0.5"
 max_length = 5
 
 [node name="Snapping" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]

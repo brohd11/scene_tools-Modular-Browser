@@ -23,6 +23,9 @@ var plugin_instance: SceneTools
 @export var rotation_x: LineEdit
 @export var rotation_y: LineEdit
 @export var rotation_z: LineEdit
+@export var position_x: LineEdit
+@export var position_y: LineEdit
+@export var position_z: LineEdit
 @export var scale_link_button: Button
 @export var random_scale: LineEdit
 @export var plane_option: OptionButton
@@ -92,6 +95,10 @@ func _ready() -> void:
 	scale_x.text_changed.connect(_on_scale_x_text_changed)
 	scale_y.text_changed.connect(_on_scale_y_text_changed)
 	scale_z.text_changed.connect(_on_scale_z_text_changed)
+	
+	position_x.text_changed.connect(_on_position_x_text_changed)
+	position_y.text_changed.connect(_on_position_y_text_changed)
+	position_z.text_changed.connect(_on_position_z_text_changed)
 	
 	set_root_button.pressed.connect(_on_set_root_button_pressed)
 	settings_button.pressed.connect(_on_settings_button_pressed)
@@ -235,6 +242,27 @@ func _on_scale_z_text_changed(text: String) -> void:
 
 func _on_rotation_step_text_changed(text: String) -> void:
 	plugin_instance.place_tool.set_rotation_step(deg_to_rad(float(text)))
+
+func _on_position_x_text_changed(text: String) -> void:
+	plugin_instance.place_tool.set_position(Vector3(
+		float(text),
+		plugin_instance.place_tool.position.y,
+		plugin_instance.place_tool.position.z
+		))
+
+func _on_position_y_text_changed(text: String) -> void:
+	plugin_instance.place_tool.set_position(Vector3(
+		plugin_instance.place_tool.position.x,
+		float(text),
+		plugin_instance.place_tool.position.z
+		))
+
+func _on_position_z_text_changed(text: String) -> void:
+	plugin_instance.place_tool.set_position(Vector3(
+		plugin_instance.place_tool.position.x,
+		plugin_instance.place_tool.position.y,
+		float(text)
+		))
 
 #func _on_force_readable_name_checkbox_toggled(toggled: bool) -> void:
 	#plugin_instance.place_tool.force_readable_name = toggled
