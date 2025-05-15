@@ -160,6 +160,8 @@ func forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 			
 			if not has_other_col:
 				var result := Utils.raycast_terrain_3d(viewport_camera, terrain_3D_node)
+				if result.z > 3.4e38:
+					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				if is_nan(result.y):
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				var height = terrain_3D_node.data.get_height(result)

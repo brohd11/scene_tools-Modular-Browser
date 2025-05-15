@@ -197,21 +197,23 @@ func update_selected_assets(new_selected:Array) -> void:
 			remove_brush = true
 	# if the amount hasn't changed and there is one selected,
 	# then compare newly selected with previously selected
-	elif new_selected.size() == 1 and selected_assets.size() == 1:
-		if new_selected[0] != selected_assets[0]:
-			var scene := ResourceLoader.load(new_selected[0]) as PackedScene
-			
-			if scene:
-				place_tool.change_brush(scene)
-				if place_tool.snapping_enabled:
-					place_tool.set_grid_visible(place_tool.grid_display_enabled)
-			else:
-				remove_brush = true
+	
+	#elif new_selected.size() == 1 and selected_assets.size() == 1:
+		#if new_selected[0] != selected_assets[0]:
+	var scene := ResourceLoader.load(new_selected[0]) as PackedScene
+	
+	if scene:
+		place_tool.change_brush(scene)
+		if place_tool.snapping_enabled:
+			place_tool.set_grid_visible(place_tool.grid_display_enabled)
+	else:
+		remove_brush = true
 	
 	if remove_brush:
 		place_tool.grid_mesh.hide()
 		if place_tool.brush != null:
 			place_tool.brush.free()
+	
 	
 	selected_assets = new_selected
 
