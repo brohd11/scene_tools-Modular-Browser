@@ -22,9 +22,14 @@ func _connect_global_bus():
 
 
 func _on_data_items_sent(items, root):
+	if is_instance_valid(gui_instance):
+		if not gui_instance.enable_plugin_button.button_pressed:
+			set_plugin_enabled(false)
+			return
+	
 	if not plugin_enabled:
 		set_plugin_enabled(true)
-		
+	
 	var scenes = ab_lib.ABTree.Static.get_item_array_paths(items,[],["PackedScene"])
 	if scenes.is_empty():
 		#update_selected_assets([])
@@ -142,9 +147,11 @@ func load_config():
 	for tool in tools:
 		tool.load_state(configuration)
 
+
 func set_plugin_enabled(enabled: bool) -> void:
 	plugin_enabled = enabled
 	current_tool._on_plugin_enabled(enabled)
+	
 	if enabled:
 		var selected = EditorInterface.get_selection().get_selected_nodes()
 		if selected.size() > 1:
@@ -200,8 +207,9 @@ func update_selected_assets(new_selected:Array) -> void:
 	
 	#elif new_selected.size() == 1 and selected_assets.size() == 1:
 		#if new_selected[0] != selected_assets[0]:
-	var scene := ResourceLoader.load(new_selected[0]) as PackedScene
-	
+	var scene
+	if not new_selected.is_empty():
+		scene = ResourceLoader.load(new_selected[0]) as PackedScene
 	if scene:
 		place_tool.change_brush(scene)
 		if place_tool.snapping_enabled:
@@ -210,7 +218,8 @@ func update_selected_assets(new_selected:Array) -> void:
 		remove_brush = true
 	
 	if remove_brush:
-		place_tool.grid_mesh.hide()
+		if is_instance_valid(place_tool.grid_mesh):
+			place_tool.grid_mesh.hide()
 		if place_tool.brush != null:
 			place_tool.brush.free()
 	

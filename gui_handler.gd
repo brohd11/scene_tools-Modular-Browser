@@ -1,9 +1,8 @@
 @tool
 extends Control
+const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
 
 const SceneTools = preload("res://addons/scene_tools/plugin.gd")
-
-
 
 var plugin_instance: SceneTools
 
@@ -51,7 +50,7 @@ var plugin_instance: SceneTools
 @onready var terrain_3D_snap_check = %TerrainSnapHeightCheck
 @onready var terrain_3D_all_col_container = %TerrainAllCollisionsContainer
 @onready var terrain_3D_all_collisions_check: CheckBox = %TerrainAllCollisionsCheck
-
+@onready var enable_plugin_button: Button = %EnablePluginButton
 
 
 func _ready() -> void:
@@ -69,6 +68,8 @@ func _ready() -> void:
 		_set_root_node(plugin_instance.root_node)
 	if plugin_instance.terrain3D_node:
 		_set_terrain_3D_node(plugin_instance.terrain3D_node)
+	
+	enable_plugin_button.toggled.connect(_on_enable_plugin_toggled)
 	
 	snapping_button.toggled.connect(_on_snapping_toggled)
 	plane_level.text_changed.connect(_on_plane_level_text_changed)
@@ -112,15 +113,20 @@ func _ready() -> void:
 	chance_to_spawn_container.hide()
 	
 	plugin_instance.load_config()
+	_register_toolbar_info()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(plugin_instance):
 			plugin_instance.save_config()
-			plugin_instance.plugin_enabled = false
+			plugin_instance.set_plugin_enabled(false)
 			plugin_instance.gui_instance = null
 
 #region Settings
+
+func _on_enable_plugin_toggled(toggled:bool):
+	if not toggled:
+		plugin_instance.set_plugin_enabled(false)
 
 func _on_mode_option_button_item_selected(index: int) -> void:
 	if not EditorInterface.is_plugin_enabled("terrain_3d"):
@@ -321,3 +327,41 @@ func set_terrain_3D_node_name(node):
 	else:
 		terrain_3D_node_lab.text = "null"
 		terrain_3D_node_lab.tooltip_text = "null"
+
+func _register_toolbar_info():
+	var window_id = ab_lib.Stat.ed_util.find_parent_window_id(self)
+	var inst_dict = ab_lib.window_dict.get(window_id)
+	for key in inst_dict:
+		var HelperInst:ab_lib.HelperInst = inst_dict.get(key)
+		
+		var enable_plugin_msg = "Enables placement when recieving scenes."
+		enable_plugin_button.tooltip_text = enable_plugin_msg
+		HelperInst.ABInstSignals.connect_toolbar_info(enable_plugin_button, enable_plugin_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(snapping_button, "Enable snap to grid.")
+		HelperInst.ABInstSignals.connect_toolbar_info(align_to_surface_button, "Align up vector of scene to collider normal.")
+		HelperInst.ABInstSignals.connect_toolbar_info(random_rotation_button, "Rotate the scene randomly on placement.")
+		HelperInst.ABInstSignals.connect_toolbar_info(random_scale_button, "Set the scale of the scene randomly on placement.")
+		HelperInst.ABInstSignals.connect_toolbar_info(random_rotation_axis, "Axis to rotate the scene.")
+		HelperInst.ABInstSignals.connect_toolbar_info(chance_to_spawn, "Chance for scene to spawn.")
+		HelperInst.ABInstSignals.connect_toolbar_info(scale_link_button, "Link/Unlink the scale axises.")
+		var scale_msg = "Change scale of scene."
+		HelperInst.ABInstSignals.connect_toolbar_info(scale_x, scale_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(scale_y, scale_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(scale_z, scale_msg)
+		var rotation_msg = "Change rotation of scene."
+		HelperInst.ABInstSignals.connect_toolbar_info(rotation_x, rotation_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(rotation_y, rotation_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(rotation_z, rotation_msg)
+		var postion_msg = "Change position offset of scene."
+		HelperInst.ABInstSignals.connect_toolbar_info(position_x, postion_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(position_y, postion_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(position_z, postion_msg)
+		HelperInst.ABInstSignals.connect_toolbar_info(plane_option, "Axises of the placement plane.")
+		HelperInst.ABInstSignals.connect_toolbar_info(plane_level, "Level the placement plane is set.")
+		HelperInst.ABInstSignals.connect_toolbar_info(display_grid_checkbox, "Display the grid mesh.")
+		HelperInst.ABInstSignals.connect_toolbar_info(mode_option, "Placement modes.")
+		HelperInst.ABInstSignals.connect_toolbar_info(settings_button, "Extra settings panel.")
+		HelperInst.ABInstSignals.connect_toolbar_info(set_root_button, "Set node that scenes will be placed under.")
+		HelperInst.ABInstSignals.connect_toolbar_info(terrain_3D_button, "Set the desired Terrain3D node to place on.")
+		HelperInst.ABInstSignals.connect_toolbar_info(terrain_3D_snap_check, "Snap to Terrain3D using API call.")
+		HelperInst.ABInstSignals.connect_toolbar_info(terrain_3D_all_collisions_check, "Use Terrain3D or regular colliders.")

@@ -1,19 +1,43 @@
-[gd_scene load_steps=10 format=3 uid="uid://ilgtvpjc8ygg"]
+[gd_scene load_steps=13 format=3 uid="uid://ilgtvpjc8ygg"]
 
 [ext_resource type="Script" uid="uid://di85d3xcrc7f5" path="res://addons/scene_tools/gui_handler.gd" id="1_atvme"]
 [ext_resource type="PackedScene" uid="uid://bmm78slm8roxk" path="res://addons/modular_browser/user/template/components/theme_setter.tscn" id="1_xns41"]
 [ext_resource type="PackedScene" uid="uid://bseaxebvnrkgn" path="res://addons/modular_browser/user/options/options_button.tscn" id="2_j8wyx"]
 [ext_resource type="Texture2D" uid="uid://b2byjk3m64ir0" path="res://addons/modular_browser/plugin/resources/icons/Instance.svg" id="3_m38gu"]
+[ext_resource type="Texture2D" uid="uid://hl025qqre4lp" path="res://addons/modular_browser/plugin/resources/icons/Object.svg" id="4_1kbom"]
 [ext_resource type="Texture2D" uid="uid://dn21q7d4tqkqa" path="res://addons/modular_browser/plugin/resources/icons/Info.svg" id="4_xns41"]
 [ext_resource type="Texture2D" uid="uid://1r064acw3svi" path="res://addons/modular_browser/plugin/resources/icons/Node.svg" id="5_xns41"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cmt0l"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0501"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_473d1"]
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d1nmx"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0501"]
+content_margin_left = 4.0
+content_margin_top = 4.0
 content_margin_bottom = 4.0
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
@@ -57,6 +81,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="SceneTools" type="HBoxContainer" parent="VBoxContainer" node_paths=PackedStringArray("snapping_button", "snapping_step", "snapping_offset", "align_to_surface_button", "help_dialog", "version_label", "random_rotation_button", "random_scale_button", "random_rotation_axis", "random_rotation", "scale_x", "scale_y", "scale_z", "rotation_x", "rotation_y", "rotation_z", "position_x", "position_y", "position_z", "scale_link_button", "random_scale", "plane_option", "display_grid_checkbox", "mode_option", "surface_container", "plane_container", "chance_to_spawn_container", "chance_to_spawn", "plane_level", "rotation_step", "side_panel")]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
 script = ExtResource("1_atvme")
@@ -119,12 +144,19 @@ layout_mode = 2
 
 [node name="OptionsButton" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH/MarginContainer" instance=ExtResource("2_j8wyx")]
 layout_mode = 2
+theme_override_styles/pressed = SubResource("StyleBoxFlat_473d1")
+theme_override_styles/normal = SubResource("StyleBoxFlat_d1nmx")
+flat = false
 
-[node name="SettingsButton" type="Button" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH"]
+[node name="EnablePluginButton" type="Button" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
+size_flags_vertical = 4
 focus_mode = 0
-icon = ExtResource("4_xns41")
+toggle_mode = true
+button_pressed = true
+icon = ExtResource("4_1kbom")
 
 [node name="Spacer" type="Control" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH"]
 visible = false
@@ -159,6 +191,12 @@ tooltip_text = "Editor"
 mouse_filter = 1
 text = "Editor"
 clip_text = true
+
+[node name="SettingsButton" type="Button" parent="VBoxContainer/MarginContainer/PanelContainer/MarginContainer/RootNodeH"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+icon = ExtResource("4_xns41")
 
 [node name="SidePanel" type="ScrollContainer" parent="VBoxContainer"]
 custom_minimum_size = Vector2(250, 0)
@@ -524,7 +562,6 @@ layout_mode = 2
 [node name="RotationCheckBox" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
-button_pressed = true
 text = "Rotation"
 
 [node name="RandomRotationAxis" type="OptionButton" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer"]
@@ -548,7 +585,7 @@ text = "+/-"
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "360.0"
+text = "0.0"
 max_length = 5
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer"]
@@ -557,7 +594,6 @@ layout_mode = 2
 [node name="ScaleCheckBox" type="CheckBox" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
 focus_mode = 0
-button_pressed = true
 text = "Scale"
 
 [node name="Label" type="Label" parent="VBoxContainer/SidePanel/Container/Randomization/MarginContainer/VBoxContainer/HBoxContainer3"]
@@ -569,7 +605,7 @@ text = "+/-"
 auto_translate_mode = 1
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_d1c51")
-text = "0.5"
+text = "0.0"
 max_length = 5
 
 [node name="Snapping" type="PanelContainer" parent="VBoxContainer/SidePanel/Container"]
