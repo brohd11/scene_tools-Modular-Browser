@@ -1,6 +1,7 @@
 @tool
 extends Control
 const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
+const PopupHelper = ab_lib.Stat.popup_menu_path_helper
 
 const SceneTools = preload("res://addons/scene_tools/plugin.gd")
 
@@ -40,7 +41,6 @@ var plugin_instance: SceneTools
 
 @export var side_panel: Control
 
-@onready var settings_button = %SettingsButton
 @onready var set_root_button = %SetRootButton
 @onready var root_name_label = %RootNameLabel
 @onready var terrain_3D_container = %TerrainH
@@ -51,6 +51,18 @@ var plugin_instance: SceneTools
 @onready var terrain_3D_all_col_container = %TerrainAllCollisionsContainer
 @onready var terrain_3D_all_collisions_check: CheckBox = %TerrainAllCollisionsCheck
 @onready var enable_plugin_button: Button = %EnablePluginButton
+
+@onready var menu_button: MenuButton = %MenuButton
+
+const CALLABLE_KEY = "CALLABLE_KEY"
+var menu_button_dict = {
+	"Settings":{
+		PopupHelper.ParamKeys.ICON_KEY: [ab_lib.EditorIcons.info],
+		PopupHelper.ParamKeys.TOOL_TIP_KEY: ["Other settings and info"],
+		CALLABLE_KEY: _on_settings_button_pressed
+	},
+}
+var PMHelper
 
 
 func _ready() -> void:
@@ -102,11 +114,16 @@ func _ready() -> void:
 	position_z.text_changed.connect(_on_position_z_text_changed)
 	
 	set_root_button.pressed.connect(_on_set_root_button_pressed)
-	settings_button.pressed.connect(_on_settings_button_pressed)
+	#settings_button.pressed.connect(_on_settings_button_pressed)
 	terrain_3D_button.pressed.connect(_on_set_terrain_3D_button_pressed)
 	terrain_3D_snap_check.toggled.connect(_on_terrain_3D_snap_check_toggled)
 	terrain_3D_all_collisions_check.toggled.connect(_on_terrain_all_collisions_check_toggled)
 	
+	ab_lib.Stat.ui_help.set_menu_button_theme(menu_button)
+	menu_button.pressed.connect(_on_menu_button_pressed)
+	var popup = menu_button.get_popup()
+	PMHelper = PopupHelper.MouseHelper.new(popup)
+	PopupHelper.parse_dict_static(menu_button_dict, popup, _on_menu_button_popup_pressed)
 	# Hide mode specific containers
 	surface_container.hide()
 	plane_container.hide()
@@ -121,6 +138,17 @@ func _notification(what: int) -> void:
 			plugin_instance.save_config()
 			plugin_instance.set_plugin_enabled(false)
 			plugin_instance.gui_instance = null
+
+func _on_menu_button_pressed():
+	ab_lib.Stat.ui_help.popup_send_toolbar_info(menu_button.get_popup())
+
+func _on_menu_button_popup_pressed(id:int, popup:PopupMenu):
+	var menu_path = PopupHelper.parse_menu_path(id, popup)
+	var data = menu_button_dict.get(menu_path)
+	var callable = data.get(CALLABLE_KEY)
+	if callable:
+		callable.call()
+
 
 #region Settings
 
@@ -360,8 +388,9 @@ func _register_toolbar_info():
 		HelperInst.ABInstSignals.connect_toolbar_info(plane_level, "Level the placement plane is set.")
 		HelperInst.ABInstSignals.connect_toolbar_info(display_grid_checkbox, "Display the grid mesh.")
 		HelperInst.ABInstSignals.connect_toolbar_info(mode_option, "Placement modes.")
-		HelperInst.ABInstSignals.connect_toolbar_info(settings_button, "Extra settings panel.")
 		HelperInst.ABInstSignals.connect_toolbar_info(set_root_button, "Set node that scenes will be placed under.")
 		HelperInst.ABInstSignals.connect_toolbar_info(terrain_3D_button, "Set the desired Terrain3D node to place on.")
 		HelperInst.ABInstSignals.connect_toolbar_info(terrain_3D_snap_check, "Snap to Terrain3D using API call.")
 		HelperInst.ABInstSignals.connect_toolbar_info(terrain_3D_all_collisions_check, "Use Terrain3D or regular colliders.")
+		
+		HelperInst.ABInstSignals.connect_toolbar_info(menu_button, "SceneTools options.")
