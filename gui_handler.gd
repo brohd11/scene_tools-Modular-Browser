@@ -158,7 +158,8 @@ func _on_enable_plugin_toggled(toggled:bool):
 
 func _on_mode_option_button_item_selected(index: int) -> void:
 	if not EditorInterface.is_plugin_enabled("terrain_3d"):
-		index = 0
+		if index == 3:
+			index = 0
 	plugin_instance.place_tool.change_mode(index)
 	plugin_instance.editor_grab_focus()
 

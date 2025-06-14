@@ -571,7 +571,8 @@ func change_brush(packed_scene: PackedScene) -> void:
 		_on_scene_changed(EditorInterface.get_edited_scene_root())
 	
 	if not plugin.root_node or not plugin.plugin_enabled:
-		brush.hide()
+		if is_instance_valid(brush):
+			brush.hide()
 
 func change_mode(new_mode: Mode) -> void:
 	plugin.gui_instance.surface_container.hide()

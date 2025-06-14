@@ -27,6 +27,11 @@ func _on_data_items_sent(items, root):
 			set_plugin_enabled(false)
 			return
 	
+	if not root_node:
+		ab_lib.Stat.ed_util.safe_editor.push_toast("Set parent node for SceneTools.", 1)
+		set_plugin_enabled(false)
+		return
+	
 	if not plugin_enabled:
 		set_plugin_enabled(true)
 	
@@ -283,6 +288,8 @@ func editor_grab_focus():
 		EditorInterface.get_base_control().get_window().grab_focus()
 
 static func check_terrain_3D_node(node):
+	if not EditorInterface.is_plugin_enabled("terrain_3d"):
+		return false
 	var check_script = load(TERRAIN3D_CHECK_PATH)
 	var is_terrain = check_script.check_terrain_3D_node(node)
 	if not is_terrain:
