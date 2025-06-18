@@ -14,9 +14,16 @@ const CONFIG_PATH = "res://addons/scene_tools/config/scene_tools.cfg"
 
 const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
 func _connect_global_bus():
-	if not ab_lib.ABGlobalSignals:
-		print("Re-enable Scene Tools plugin once Modular Browser is enabled.")
-		return
+	var msg_flag = false
+	while not ab_lib.ABGlobalSignals:
+		if not msg_flag:
+			print("Scene Tools plugin needs Modular Browser to be enabled.")
+		msg_flag = true
+		await get_tree().process_frame
+	
+	if msg_flag:
+		print("Scene Tools plugin connected to Modular Browser.")
+	
 	var bus_array = ab_lib.ABGlobalSignals.get_global_bus_array(["scene_tools_send"])
 	ab_lib.ABGlobalSignals.connect_send_files_to_bus(bus_array, _on_data_items_sent)
 
