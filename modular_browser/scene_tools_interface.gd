@@ -3,8 +3,8 @@ extends "res://addons/modular_browser/plugin/scripts_panels/panel_interface_base
 
 class Data:
 	const module = Modules.None
-	const name = "Scene Tools"
-	const icons = [Icons.object]
+	const name = "Plugins/Scene Tools"
+	const icons = [Icons.editor_plugin, Icons.object]
 	const scene_path = "res://addons/scene_tools/gui.tscn" # scene that actually instantiates in browser
 	const ui_scene_path = keys.PanelTabData.NONE # ui scene for add panel window, can be none, used with interface
 	const interface_path = keys.PanelTabData.NONE # path to this file, used with ui scene, if not set, defaults to this path
