@@ -3,7 +3,7 @@ extends Control
 const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
 const PopupHelper = ab_lib.Stat.popup_menu_path_helper
 
-const SceneTools = preload("res://addons/scene_tools/plugin.gd") #import
+const SceneTools = preload("uid://dd3oj22p2gir7") # plugin.gd
 
 var plugin_instance: SceneTools
 

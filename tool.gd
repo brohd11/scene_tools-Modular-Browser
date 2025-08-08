@@ -1,6 +1,6 @@
 extends RefCounted
 
-const SceneTools := preload("res://addons/scene_tools/plugin.gd")
+const SceneTools := preload("uid://dd3oj22p2gir7") # plugin.gd
 const Utils := preload("res://addons/scene_tools/utils.gd")
 
 var plugin: SceneTools
