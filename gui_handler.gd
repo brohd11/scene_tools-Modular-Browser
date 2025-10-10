@@ -64,7 +64,7 @@ const ENABLE_PLUGIN_MSG = "Enables placement when recieving scenes."
 const CALLABLE_KEY = "CALLABLE_KEY"
 var menu_button_dict = {
 	"Settings":{
-		PopupHelper.ParamKeys.ICON_KEY: [ab_lib.EditorIcons.info],
+		PopupHelper.ParamKeys.ICON_KEY: ["Info"],
 		PopupHelper.ParamKeys.TOOL_TIP_KEY: ["Other settings and info"],
 		CALLABLE_KEY: _on_settings_button_pressed
 	},
@@ -73,6 +73,9 @@ var PMHelper: PopupHelper.MouseHelper
 
 
 func _ready() -> void:
+	if is_part_of_edited_scene():
+		return
+	
 	plugin_instance = SceneTools.plugin_instance
 	if not plugin_instance:
 		push_error("Scene Tools plugin not found.")
@@ -80,6 +83,11 @@ func _ready() -> void:
 	
 	root_name_label.text = "Set parent node"
 	terrain_3D_node_lab.text = "Set Terrain3D Node"
+	
+	enable_plugin_button.icon = ab_lib.Stat.ed_util.get_icon("Object")
+	set_root_button.icon = ab_lib.Stat.ed_util.get_icon("Node")
+	menu_button.icon = ab_lib.Stat.ed_util.get_icon("TripleBar")
+	scale_link_button.icon = ab_lib.Stat.ed_util.get_icon("Instance")
 	
 	plugin_instance.gui_instance = self
 	
