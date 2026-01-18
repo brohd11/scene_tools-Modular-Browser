@@ -61,12 +61,12 @@ const ROTATION_MSG = "Change rotation of scene."
 const POSITION_MSG = "Change position offset of scene."
 const ENABLE_PLUGIN_MSG = "Enables placement when recieving scenes."
 
-const CALLABLE_KEY = "CALLABLE_KEY"
+
 var menu_button_dict = {
 	"Settings":{
-		PopupHelper.ParamKeys.ICON_KEY: ["Info"],
-		PopupHelper.ParamKeys.TOOL_TIP_KEY: ["Other settings and info"],
-		CALLABLE_KEY: _on_settings_button_pressed
+		PopupHelper.ParamKeys.ICON: ["Info"],
+		PopupHelper.ParamKeys.TOOL_TIP: ["Other settings and info"],
+		PopupHelper.ParamKeys.CALLABLE: _on_settings_button_pressed
 	},
 }
 var PMHelper: PopupHelper.MouseHelper
@@ -160,7 +160,7 @@ func _on_menu_button_pressed():
 func _on_menu_button_popup_pressed(id:int, popup:PopupMenu):
 	var menu_path = PopupHelper.parse_menu_path(id, popup)
 	var data = menu_button_dict.get(menu_path)
-	var callable = data.get(CALLABLE_KEY)
+	var callable = data.get(PopupHelper.ParamKeys.CALLABLE)
 	if callable:
 		callable.call()
 
