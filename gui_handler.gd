@@ -1,7 +1,7 @@
 @tool
 extends Control
-const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
-const PopupHelper = ab_lib.Stat.popup_menu_path_helper
+
+const PopupHelper = PopupWrapper.PopupHelper
 
 const SceneTools = preload("uid://dd3oj22p2gir7") # plugin.gd
 
@@ -84,10 +84,10 @@ func _ready() -> void:
 	root_name_label.text = "Set parent node"
 	terrain_3D_node_lab.text = "Set Terrain3D Node"
 	
-	enable_plugin_button.icon = ab_lib.Stat.ed_util.get_icon("Object")
-	set_root_button.icon = ab_lib.Stat.ed_util.get_icon("Node")
-	menu_button.icon = ab_lib.Stat.ed_util.get_icon("TripleBar")
-	scale_link_button.icon = ab_lib.Stat.ed_util.get_icon("Instance")
+	enable_plugin_button.icon = EditorInterface.get_editor_theme().get_icon("Object", "EditorIcons")
+	set_root_button.icon = EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
+	menu_button.icon = EditorInterface.get_editor_theme().get_icon("TripleBar", "EditorIcons")
+	scale_link_button.icon = EditorInterface.get_editor_theme().get_icon("Instance", "EditorIcons")
 	
 	plugin_instance.gui_instance = self
 	
@@ -97,6 +97,8 @@ func _ready() -> void:
 		_set_terrain_3D_node(plugin_instance.terrain3D_node)
 	
 	enable_plugin_button.toggled.connect(_on_enable_plugin_toggled)
+	enable_plugin_button.theme_type_variation = &"FlatButton"
+	set_root_button.theme_type_variation = &"FlatButton"
 	
 	snapping_button.toggled.connect(_on_snapping_toggled)
 	plane_level.text_changed.connect(_on_plane_level_text_changed)
@@ -134,7 +136,7 @@ func _ready() -> void:
 	terrain_3D_snap_check.toggled.connect(_on_terrain_3D_snap_check_toggled)
 	terrain_3D_all_collisions_check.toggled.connect(_on_terrain_all_collisions_check_toggled)
 	
-	ab_lib.Stat.ui_help.set_menu_button_theme(menu_button)
+	menu_button.theme_type_variation = &"FlatButton"
 	menu_button.pressed.connect(_on_menu_button_pressed)
 	var popup = menu_button.get_popup()
 	PMHelper = PopupHelper.MouseHelper.new(popup)
@@ -155,7 +157,8 @@ func _notification(what: int) -> void:
 			plugin_instance.gui_instance = null
 
 func _on_menu_button_pressed():
-	ab_lib.Stat.ui_help.popup_send_toolbar_info(menu_button.get_popup())
+	pass
+	#ab_lib.Stat.ui_help.popup_send_toolbar_info(menu_button.get_popup())
 
 func _on_menu_button_popup_pressed(id:int, popup:PopupMenu):
 	var menu_path = PopupHelper.parse_menu_path(id, popup)
@@ -402,10 +405,11 @@ func _register_toolbar_info():
 		menu_button: "SceneTools options."
 	}
 	enable_plugin_button.tooltip_text = ENABLE_PLUGIN_MSG
-	var window_id = ab_lib.Stat.ed_util.find_parent_window_id(self)
-	var inst_dict = ab_lib.window_dict.get(window_id)
-	for key in inst_dict:
-		var HelperInst:ab_lib.HelperInst = inst_dict.get(key)
-		for control in toolbar_info_dict.keys():
-			var msg = toolbar_info_dict.get(control)
-			HelperInst.ABInstSignals.connect_toolbar_info(control, msg)
+	
+	#var window_id = ab_lib.Stat.ed_util.find_parent_window_id(self)
+	#var inst_dict = ab_lib.window_dict.get(window_id)
+	#for key in inst_dict:
+		#var HelperInst:ab_lib.HelperInst = inst_dict.get(key)
+		#for control in toolbar_info_dict.keys():
+			#var msg = toolbar_info_dict.get(control)
+			#HelperInst.ABInstSignals.connect_toolbar_info(control, msg)

@@ -3,69 +3,26 @@ extends EditorPlugin
 
 const plugin_name := "Scene Tools"
 
+const CONFIG_PATH = "user://addons/scene_tools/scene_tools.cfg"
+
+const GUI_SCENE = preload("res://addons/scene_tools/gui.tscn")
+
 const GuiHandler := preload("res://addons/scene_tools/gui_handler.gd")
 const Tool := preload("res://addons/scene_tools/tool.gd")
 const PlaceTool := preload("res://addons/scene_tools/tools/place.gd")
 
-
-## ModBrowser Start
-const TERRAIN3D_CHECK_PATH = "res://addons/scene_tools/config/hidden/terrain_3D_check.gd"
-const CONFIG_PATH = "res://addons/scene_tools/config/scene_tools.cfg"
-
-const ab_lib = preload("res://addons/modular_browser/plugin/script_libs/ab_lib.gd")
-func _connect_global_bus():
-	var msg_flag = false
-	while not ab_lib.ABGlobalSignals:
-		if not msg_flag:
-			print("Scene Tools plugin needs Modular Browser to be enabled.")
-		msg_flag = true
-		await get_tree().process_frame
-	
-	if msg_flag:
-		print("Scene Tools plugin connected to Modular Browser.")
-	
-	var bus_array = ab_lib.ABGlobalSignals.get_global_bus_array(["scene_tools_send"])
-	ab_lib.ABGlobalSignals.connect_send_files_to_bus(bus_array, _on_data_items_sent)
-
-
-func _on_data_items_sent(items, root):
-	if is_instance_valid(gui_instance):
-		if not gui_instance.enable_plugin_button.button_pressed:
-			set_plugin_enabled(false)
-			return
-	
-	if not root_node:
-		ab_lib.Stat.ed_util.safe_editor.push_toast("Set parent node for SceneTools.", 1)
-		set_plugin_enabled(false)
-		return
-	
-	if not plugin_enabled:
-		set_plugin_enabled(true)
-	
-	var scenes = ab_lib.ABTree.Static.get_item_array_paths(items,[],["PackedScene"])
-	if scenes.is_empty():
-		#update_selected_assets([])
-		return
-	var path = scenes[0]
-	var uid = ab_lib.Stat.ed_util.path_to_uid(path)
-	
-	update_selected_assets(scenes)
-	editor_grab_focus()
-
 static var plugin_instance
-## /
-
 var gui_instance: GuiHandler
 
 var root_node: Node: # scene added to here
 	set(val):
 		root_node = val
 		_get_state()
+
 var terrain3D_node:
 	set(val):
 		terrain3D_node = val
 		_get_state()
-
 
 
 var scene_root: Node
@@ -79,12 +36,14 @@ var tools: Array[Tool] = [
 ]
 var current_tool: Tool = place_tool
 
+var editor_dock:EditorDock
 
 func _enter_tree() -> void:
 	plugin_instance = self
 	
+	EditorGlobalSignals.subscribe(&"send_to_scene_tools", _on_send_to_scene_tools)
+	
 	await get_tree().process_frame
-	_connect_global_bus()
 	
 	scene_changed.connect(_on_scene_changed)
 	scene_closed.connect(_on_scene_closed)
@@ -94,12 +53,52 @@ func _enter_tree() -> void:
 	current_tool.enter()
 	
 	EditorInterface.get_selection().selection_changed.connect(_on_editor_selection_changed, 1)
+	
+	editor_dock = EditorDock.new()
+	editor_dock.icon_name = "Object"
+	editor_dock.default_slot = EditorDock.DOCK_SLOT_LEFT_BR
+	editor_dock.add_child(GUI_SCENE.instantiate())
+	add_dock(editor_dock)
 
 
 func _exit_tree() -> void:
 	save_config()
 	for tool in tools: # doesn't seem to cause issues, but may be unnecessary?
 		tool.exit()
+	
+	
+	if is_instance_valid(editor_dock):
+		remove_dock(editor_dock)
+		editor_dock.queue_free()
+
+
+func _on_send_to_scene_tools(path):
+	if is_instance_valid(gui_instance):
+		if not gui_instance.enable_plugin_button.button_pressed:
+			set_plugin_enabled(false)
+			return
+	
+	if not root_node:
+		printerr("Set parent node for SceneTools.")
+		set_plugin_enabled(false)
+		return
+	
+	if path == EditorInterface.get_edited_scene_root().scene_file_path:
+		set_plugin_enabled(false)
+		return
+	
+	if path.ends_with(".tscn"):
+		var root = ALibRuntime.Utils.UResource.UPackedScene.ReadFile.get_root_type(path, true)
+		if not ClassDB.is_parent_class(root, "Node3D"):
+			set_plugin_enabled(false)
+			return
+	
+	
+	if not plugin_enabled:
+		set_plugin_enabled(true)
+	
+	update_selected_assets([path])
+	editor_grab_focus()
 
 
 func _input(event: InputEvent) -> void:
@@ -138,6 +137,7 @@ func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent) -> int:
 func get_config_file():
 	var config = ConfigFile.new()
 	if not FileAccess.file_exists(CONFIG_PATH):
+		DirAccess.make_dir_recursive_absolute(CONFIG_PATH.get_base_dir())
 		var c = ConfigFile.new()
 		c.save(CONFIG_PATH)
 		await get_tree().process_frame
@@ -297,8 +297,4 @@ func editor_grab_focus():
 static func check_terrain_3D_node(node):
 	if not EditorInterface.is_plugin_enabled("terrain_3d"):
 		return false
-	var check_script = load(TERRAIN3D_CHECK_PATH)
-	var is_terrain = check_script.check_terrain_3D_node(node)
-	if not is_terrain:
-		return false
-	return true
+	return node.get_class() == "Terrain3D"
